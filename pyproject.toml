@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "autoapply-ai"
+version = "0.1.0"
+description = "Local-first, $0-cost intelligent job application automation agent"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+dependencies = [
+    # Web framework
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "python-multipart>=0.0.6",
+    # Database
+    "sqlalchemy[asyncio]>=2.0.23",
+    "aiosqlite>=0.19.0",
+    "asyncpg>=0.29.0",
+    "alembic>=1.13.0",
+    # Auth & Security
+    "python-jose[cryptography]>=3.3.0",
+    "passlib[bcrypt]>=1.7.4",
+    # Scheduling
+    "apscheduler>=3.10.4",
+    # Scraping
+    "playwright>=1.40.0",
+    "playwright-stealth>=1.0.6",
+    "beautifulsoup4>=4.12.0",
+    "httpx>=0.25.0",
+    "tenacity>=8.2.0",
+    # AI / NLP
+    "sentence-transformers>=2.2.0",
+    "spacy>=3.7.0",
+    "numpy>=1.26.0",
+    # PDF Parsing
+    "PyMuPDF>=1.23.0",
+    # Configuration & Logging
+    "pydantic-settings>=2.1.0",
+    "loguru>=0.7.0",
+    # Frontend
+    "streamlit>=1.29.0",
+    # Email
+    "aiosmtplib>=3.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.23.0",
+    "ruff>=0.1.0",
+]
