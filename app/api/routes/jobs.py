@@ -28,8 +28,8 @@ async def list_jobs(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> dict:
-    """List scraped jobs with optional filters."""
-    query = select(Job)
+    """List scraped jobs with optional filters (isolated to user)."""
+    query = select(Job).where(Job.user_id == user.id)
 
     if source:
         query = query.where(Job.source == source)
@@ -42,8 +42,8 @@ async def list_jobs(
     result = await db.execute(query)
     items = list(result.scalars().all())
 
-    # Total count
-    count_q = select(func.count(Job.id))
+    # Total count for user
+    count_q = select(func.count(Job.id)).where(Job.user_id == user.id)
     if source:
         count_q = count_q.where(Job.source == source)
     if search:
@@ -61,25 +61,84 @@ async def trigger_scrape(
     background_tasks: BackgroundTasks,
     user: User = Depends(get_current_user),
 ) -> dict:
-    """Trigger a manual scrape run (async background task)."""
-    background_tasks.add_task(_run_scrape, request.query, request.location)
-    return {"message": "Scrape started", "query": request.query, "location": request.location}
+    """Trigger a smart scrape run (async background task) using user profile."""
+    background_tasks.add_task(_run_scrape, user.id)
+    return {"message": "Smart contextual scrape started"}
 
 
-async def _run_scrape(query: str, location: str) -> None:
-    """Background task to run scrapers."""
+async def _run_scrape(user_id: int) -> None:
+    """Background task to run scrapers using dynamic profile context."""
     from app.core.database import async_session_factory
     from app.services.scraper_service import ScraperService
+    from app.models.preference import Preference
+    from app.models.resume import Resume
+    import json
 
     svc = ScraperService()
     async with async_session_factory() as db:
         try:
-            runs = await svc.scrape_all(db, query=query, location=location)
+            # 1. Fetch User Preferences
+            pref_result = await db.execute(select(Preference).where(Preference.user_id == user_id))
+            pref = pref_result.scalar_one_or_none()
+
+            # 2. Fetch User Resume
+            res_result = await db.execute(
+                select(Resume).where(Resume.user_id == user_id).order_by(Resume.version.desc()).limit(1)
+            )
+            resume = res_result.scalar_one_or_none()
+
+            # 3. Construct Query
+            search_query = "Software Engineer"
+            target_location = "Remote"
+            
+            if pref:
+                # Compile desired titles
+                titles = []
+                try: 
+                    titles = json.loads(pref.desired_titles)
+                except:
+                    pass
+                
+                # Expand with resume skills if short on titles
+                if not titles and resume and resume.structured_data:
+                    try:
+                        rdata = json.loads(resume.structured_data)
+                        if rdata.get("skills"):
+                           titles = [f"{rdata['skills'][0]} Developer"] 
+                    except:
+                        pass
+                
+                if titles:
+                    search_query = " ".join(titles)
+
+                # Compile location
+                locs = []
+                try:
+                    locs = json.loads(pref.desired_locations)
+                except:
+                    pass
+                
+                if pref.country and pref.country != "Worldwide":
+                    locs.append(pref.country)
+                    
+                if locs:
+                    target_location = ", ".join(locs)
+                    
+                if pref.workplace_type and pref.workplace_type != "Any":
+                    target_location = f"{pref.workplace_type} {target_location}".strip()
+                    
+                if pref.remote_only:
+                    target_location = "Remote"
+
+            from loguru import logger
+            logger.info("Starting smart scrape for User {} | Query: [{}] | Location: [{}]", user_id, search_query, target_location)
+
+            runs = await svc.scrape_all(db, user_id=user_id, query=search_query, location=target_location)
             await db.commit()
         except Exception:
             await db.rollback()
             from loguru import logger
-            logger.exception("Background scrape failed")
+            logger.exception("Background smart scrape failed for User {}", user_id)
 
 
 @router.get("/scraper-runs")

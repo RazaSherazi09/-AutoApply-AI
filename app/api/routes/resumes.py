@@ -123,3 +123,33 @@ async def get_resume(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resume not found")
 
     return resume
+
+
+@router.post("/{resume_id}/delete", status_code=status.HTTP_200_OK)
+async def delete_resume(
+    resume_id: int,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> dict:
+    """Delete a specific resume by ID."""
+    result = await db.execute(
+        select(Resume).where(Resume.id == resume_id, Resume.user_id == user.id)
+    )
+    resume = result.scalar_one_or_none()
+
+    if not resume:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resume not found")
+
+    # Optionally delete the file from disk if file_path exists
+    if resume.file_path:
+        path = Path(resume.file_path)
+        if path.exists():
+            try:
+                path.unlink()
+            except Exception:
+                pass # Non-fatal if file missing from disk
+
+    await db.delete(resume)
+    await db.commit()
+
+    return {"message": "Resume deleted successfully"}

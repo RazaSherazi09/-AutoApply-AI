@@ -48,7 +48,7 @@ class Settings(BaseSettings):
     scrape_interval_minutes: int = 60
 
     # ── Matching ──
-    match_threshold: float = 0.65
+    match_threshold: float = 0.25
     match_weight_semantic: float = 0.6
     match_weight_skill: float = 0.2
     match_weight_title: float = 0.1

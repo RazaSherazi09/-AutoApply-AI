@@ -11,7 +11,6 @@ import re
 from pathlib import Path
 
 import fitz  # PyMuPDF
-import spacy
 from loguru import logger
 
 from app.services.embedding import EmbeddingService
@@ -146,8 +145,14 @@ class ResumeParser:
     _instance: ResumeParser | None = None
 
     def __init__(self) -> None:
-        logger.info("Loading spaCy model: en_core_web_sm")
-        self.nlp = spacy.load("en_core_web_sm")
+        try:
+            import spacy
+            logger.info("Loading spaCy model: en_core_web_sm")
+            self.nlp = spacy.load("en_core_web_sm")
+        except (ImportError, OSError):
+            logger.warning("spaCy not found. Using Mock NLP extraction.")
+            self.nlp = None
+            
         self.embedding_svc = EmbeddingService.get_instance()
 
     @classmethod
@@ -178,8 +183,6 @@ class ResumeParser:
 
         Returns dict with: name, email, phone, skills, experience_years, education, summary.
         """
-        doc = self.nlp(text[:100000])  # Limit to prevent OOM on huge PDFs
-
         # ── Name extraction ──
         # Strategy: check first 5 lines for a PERSON entity, or use the first
         # non-blank line if no entity found (most resumes start with the name).
@@ -188,15 +191,16 @@ class ResumeParser:
 
         # Try spaCy on just the header
         header_text = "\n".join(first_lines)
-        header_doc = self.nlp(header_text)
-        for ent in header_doc.ents:
-            if ent.label_ == "PERSON":
-                candidate = ent.text.strip()
-                # Validate: likely a name (2-4 words, no digits, not too long)
-                words = candidate.split()
-                if 1 <= len(words) <= 4 and not any(c.isdigit() for c in candidate) and len(candidate) < 60:
-                    name = candidate
-                    break
+        if self.nlp:
+            header_doc = self.nlp(header_text)
+            for ent in header_doc.ents:
+                if ent.label_ == "PERSON":
+                    candidate = ent.text.strip()
+                    # Validate: likely a name (2-4 words, no digits, not too long)
+                    words = candidate.split()
+                    if 1 <= len(words) <= 4 and not any(c.isdigit() for c in candidate) and len(candidate) < 60:
+                        name = candidate
+                        break
 
         # Fallback: first non-blank, non-email, non-phone line
         if not name:

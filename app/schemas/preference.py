@@ -13,6 +13,8 @@ class PreferenceUpdate(BaseModel):
     excluded_companies: list[str] = []
     min_salary: float | None = None
     remote_only: bool = False
+    country: str = "Worldwide"
+    workplace_type: str = "Any"
 
 
 class PreferenceResponse(BaseModel):
@@ -25,5 +27,7 @@ class PreferenceResponse(BaseModel):
     excluded_companies: str  # JSON array
     min_salary: float | None = None
     remote_only: bool
+    country: str
+    workplace_type: str
 
     model_config = {"from_attributes": True}

@@ -87,11 +87,11 @@ def test_embedding():
     svc = EmbeddingService.get_instance()
     vec = svc.encode("Python developer")
     check("ndarray", isinstance(vec, np.ndarray))
-    check("dim=384", vec.shape == (384,), f"{vec.shape}")
+    check("dim=768", vec.shape == (768,), f"{vec.shape}")
 
     bts = EmbeddingService.to_bytes(vec)
     check("bytes type", isinstance(bts, bytes))
-    check("len=1536", len(bts) == 384 * 4)
+    check("len=3072", len(bts) == 768 * 4)
 
     restored = EmbeddingService.from_bytes(bts)
     check("roundtrip", np.allclose(vec, restored))

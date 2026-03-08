@@ -38,8 +38,6 @@ dependencies = [
     # Configuration & Logging
     "pydantic-settings>=2.1.0",
     "loguru>=0.7.0",
-    # Frontend
-    "streamlit>=1.29.0",
     # Email
     "aiosmtplib>=3.0.0",
 ]

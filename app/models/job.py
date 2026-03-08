@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from sqlalchemy import Float, LargeBinary, String, Text
+from sqlalchemy import Float, LargeBinary, String, Text, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, IDMixin, TimestampMixin
@@ -18,13 +18,15 @@ class Job(Base, IDMixin, TimestampMixin):
 
     __tablename__ = "jobs"
 
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
+
     title: Mapped[str] = mapped_column(String(512), nullable=False)
     company: Mapped[str] = mapped_column(String(256), nullable=False)
     location: Mapped[str] = mapped_column(String(256), nullable=False, default="")
     description: Mapped[str] = mapped_column(Text, nullable=False, default="")
     url: Mapped[str] = mapped_column(String(2048), nullable=False)
     content_hash: Mapped[str] = mapped_column(
-        String(64), unique=True, index=True, nullable=False
+        String(64), unique=False, index=True, nullable=False
     )  # sha256(title+company+location)
     source: Mapped[str] = mapped_column(
         String(64), nullable=False
@@ -55,3 +57,4 @@ class Job(Base, IDMixin, TimestampMixin):
 
     # Relationships
     matches = relationship("Match", back_populates="job", lazy="selectin")
+    user = relationship("User", foreign_keys=[user_id])

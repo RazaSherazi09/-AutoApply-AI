@@ -8,7 +8,6 @@ component of the hybrid matching algorithm.
 from __future__ import annotations
 
 import re
-import spacy
 from loguru import logger
 
 # ── Normalization map: raw text → canonical skill name ──
@@ -118,9 +117,15 @@ class JobSkillExtractor:
     _instance: JobSkillExtractor | None = None
 
     def __init__(self) -> None:
-        self.nlp = spacy.load("en_core_web_sm")
-        logger.info("JobSkillExtractor initialized with {} skills + {} normalizations",
-                     len(TECH_SKILLS), len(NORMALIZE_MAP))
+        try:
+            import spacy
+            self.nlp = spacy.load("en_core_web_sm")
+        except (ImportError, OSError):
+            logger.warning("spaCy not found. Falling back to regex skill matching.")
+            self.nlp = None
+            
+        logger.info("JobSkillExtractor initialized with {} skills + {} normalizations (spaCy={})",
+                     len(TECH_SKILLS), len(NORMALIZE_MAP), self.nlp is not None)
 
     @classmethod
     def get_instance(cls) -> JobSkillExtractor:
@@ -146,27 +151,39 @@ class JobSkillExtractor:
             if raw in text_lower:
                 skills.add(canonical)
 
-        # Strategy 2: spaCy token matching for single-word skills
-        doc = self.nlp(text_lower)
+        # Strategy 2: spaCy token matching or Regex fallback for single-word skills
+        if self.nlp:
+            doc = self.nlp(text_lower)
 
-        for token in doc:
-            if token.is_stop or token.is_punct:
-                continue
-            word = token.text.strip()
-            if word in TECH_SKILLS:
-                if word in SHORT_SKILLS:
-                    # Word boundary check for short words
-                    pattern = r'\b' + re.escape(word) + r'\b'
-                    if re.search(pattern, text_lower):
+            for token in doc:
+                if token.is_stop or token.is_punct:
+                    continue
+                word = token.text.strip()
+                if word in TECH_SKILLS:
+                    if word in SHORT_SKILLS:
+                        # Word boundary check for short words
+                        pattern = r'\b' + re.escape(word) + r'\b'
+                        if re.search(pattern, text_lower):
+                            skills.add(word)
+                    else:
                         skills.add(word)
-                else:
-                    skills.add(word)
 
-        # Strategy 3: Noun chunk matching
-        for chunk in doc.noun_chunks:
-            chunk_text = chunk.text.strip()
-            if chunk_text in TECH_SKILLS:
-                skills.add(chunk_text)
+            # Strategy 3: Noun chunk matching
+            for chunk in doc.noun_chunks:
+                chunk_text = chunk.text.strip()
+                if chunk_text in TECH_SKILLS:
+                    skills.add(chunk_text)
+        else:
+            # Fallback for Strategy 2 & 3: Just split words and check
+            words = set(re.findall(r'\b\w+\b', text_lower))
+            for word in words:
+                if word in TECH_SKILLS:
+                    if word in SHORT_SKILLS:
+                        pattern = r'\b' + re.escape(word) + r'\b'
+                        if re.search(pattern, text_lower):
+                            skills.add(word)
+                    else:
+                        skills.add(word)
 
         # Strategy 4: Multi-word skills via substring
         multi_word_skills = {s for s in TECH_SKILLS if " " in s}

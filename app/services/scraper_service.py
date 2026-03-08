@@ -40,6 +40,7 @@ class ScraperService:
     async def store_jobs(
         self,
         db: AsyncSession,
+        user_id: int,
         jobs_data: list[dict],
         provider: str,
     ) -> tuple[int, int]:
@@ -59,8 +60,8 @@ class ScraperService:
         Returns:
             Tuple of (total_found, new_stored).
         """
-        # Load existing hashes for fast dedup
-        result = await db.execute(select(Job.content_hash))
+        # Load existing hashes for fast dedup, scoped by user
+        result = await db.execute(select(Job.content_hash).where(Job.user_id == user_id))
         existing_hashes: set[str] = {row[0] for row in result.all()}
 
         new_count = 0
@@ -84,6 +85,7 @@ class ScraperService:
             embedding_bytes = EmbeddingService.to_bytes(embedding_vec)
 
             job = Job(
+                user_id=user_id,
                 title=data.get("title", ""),
                 company=data.get("company", ""),
                 location=data.get("location", ""),
@@ -115,6 +117,7 @@ class ScraperService:
     async def scrape_all(
         self,
         db: AsyncSession,
+        user_id: int,
         query: str = "software engineer",
         location: str = "remote",
     ) -> list[ScraperRun]:
@@ -127,9 +130,11 @@ class ScraperService:
         from app.scrapers.adzuna import AdzunaScraper
         from app.scrapers.greenhouse_api import GreenhouseAPIScraper
         from app.scrapers.lever_api import LeverAPIScraper
+        from app.scrapers.linkedin import LinkedInScraper
         from app.scrapers.workday_api import WorkdayAPIScraper
 
         scrapers = [
+            ("linkedin", LinkedInScraper()),
             ("adzuna", AdzunaScraper()),
             ("greenhouse", GreenhouseAPIScraper()),
             ("lever", LeverAPIScraper()),
@@ -148,7 +153,7 @@ class ScraperService:
 
             try:
                 jobs_data = await scraper.scrape(query=query, location=location)
-                total, new = await self.store_jobs(db, jobs_data, provider_name)
+                total, new = await self.store_jobs(db, user_id, jobs_data, provider_name)
 
                 run.jobs_found = total
                 run.jobs_new = new

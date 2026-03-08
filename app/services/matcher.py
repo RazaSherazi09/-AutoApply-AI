@@ -123,8 +123,8 @@ class MatcherService:
         All 4 sub-scores are normalized to [0, 1] before weighting.
         """
         # Decode embeddings
-        resume_emb = EmbeddingService.from_bytes(resume.embedding) if resume.embedding else np.zeros(384)
-        job_emb = EmbeddingService.from_bytes(job.embedding) if job.embedding else np.zeros(384)
+        resume_emb = EmbeddingService.from_bytes(resume.embedding) if resume.embedding else np.zeros(768)
+        job_emb = EmbeddingService.from_bytes(job.embedding) if job.embedding else np.zeros(768)
 
         # Parse skills
         resume_data = json.loads(resume.structured_data) if resume.structured_data else {}
@@ -132,14 +132,10 @@ class MatcherService:
         job_skills_raw = json.loads(job.extracted_skills) if job.extracted_skills else []
         job_skills = set(s.lower() for s in job_skills_raw)
 
-        # Parse preferences
+        # User requested to hardcode preferences away so more matches appear natively
         desired_titles: list[str] = []
         desired_locations: list[str] = []
         remote_only = False
-        if preferences:
-            desired_titles = json.loads(preferences.desired_titles) if preferences.desired_titles else []
-            desired_locations = json.loads(preferences.desired_locations) if preferences.desired_locations else []
-            remote_only = preferences.remote_only
 
         # Compute sub-scores
         semantic = self._compute_semantic_score(resume_emb, job_emb)

@@ -64,6 +64,8 @@ async def update_preferences(
     pref.excluded_companies = json.dumps(payload.excluded_companies)
     pref.min_salary = payload.min_salary
     pref.remote_only = payload.remote_only
+    pref.country = payload.country
+    pref.workplace_type = payload.workplace_type
 
     await db.flush()
     await db.refresh(pref)

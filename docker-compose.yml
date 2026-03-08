@@ -23,17 +23,14 @@ services:
       - db
     restart: unless-stopped
 
-  # ── Streamlit frontend ──
+  # ── Next.js frontend ──
   frontend:
-    build: .
+    build: ./frontend
     container_name: autoapply-frontend
-    command: streamlit run app/frontend/streamlit_app.py --server.port 8501 --server.headless true
     ports:
-      - "8501:8501"
-    env_file:
-      - .env
+      - "3000:3000"
     environment:
-      - API_BASE=http://api:8000
+      - NEXT_PUBLIC_API_URL=http://api:8000
     depends_on:
       - api
     restart: unless-stopped
