@@ -80,6 +80,7 @@ ALLOWED_SETTINGS = {
     "match_threshold",
     "max_applications_per_day",
     "required_keywords",
+    "is_scraping_paused",
 }
 
 

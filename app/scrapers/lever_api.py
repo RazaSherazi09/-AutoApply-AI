@@ -14,7 +14,7 @@ from app.scrapers.base import BaseScraper
 
 # Default companies to scrape (add Lever company slugs)
 DEFAULT_COMPANIES: list[str] = [
-    # e.g. "netflix", "twitch"
+    "netflix", "twitch", "yelp", "canva", "coursera", "hopper", "atlassian"
 ]
 
 

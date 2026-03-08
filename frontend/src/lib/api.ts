@@ -52,6 +52,11 @@ export const api = {
       body: JSON.stringify(data),
     }),
 
+  delete: <T>(endpoint: string) =>
+    request<T>(endpoint, {
+      method: "DELETE",
+    }),
+
   upload: <T>(endpoint: string, file: File) => {
     const formData = new FormData();
     formData.append("file", file);
@@ -93,6 +98,7 @@ export const jobsApi = {
     api.post<{ message: string }>("/api/jobs/scrape", { query: "auto", location: "auto" }),
   scraperRuns: (limit = 20) =>
     api.get<ScraperRun[]>(`/api/jobs/scraper-runs?limit=${limit}`),
+  clear: () => api.delete<{ message: string }>("/api/jobs/clear"),
 };
 
 // ── Matches ──

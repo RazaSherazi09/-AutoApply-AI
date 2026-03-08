@@ -18,6 +18,7 @@ export default function JobsPage() {
 
   // Scrape
   const [scraping, setScraping] = useState(false);
+  const [clearing, setClearing] = useState(false);
   const [scrapeMsg, setScrapeMsg] = useState("");
 
   async function loadJobs() {
@@ -43,6 +44,8 @@ export default function JobsPage() {
     setScrapeMsg("");
     try {
       await jobsApi.scrape();
+      // Record the time of manual scrape so the dashboard timer can reset
+      localStorage.setItem('lastScrapeTime', Date.now().toString());
       setScrapeMsg("Intelligence gathering initiated using your AI Profile.");
       // Poll a few times to auto-load incoming jobs
       setTimeout(loadJobs, 2500);
@@ -52,6 +55,22 @@ export default function JobsPage() {
       setScrapeMsg(`Error: ${err instanceof Error ? err.message : "Scrape failed"}`);
     } finally {
       setScraping(false);
+    }
+  };
+
+  const handleClear = async () => {
+    if (!confirm("Are you sure you want to permanently clear all scraped jobs and their matches?")) return;
+    setClearing(true);
+    setScrapeMsg("");
+    try {
+      await jobsApi.clear();
+      setScrapeMsg("Database wiped successfully. Ready for fresh intelligence.");
+      setJobs([]);
+      setTotal(0);
+    } catch (err: unknown) {
+      setScrapeMsg(`Error: ${err instanceof Error ? err.message : "Clear failed"}`);
+    } finally {
+      setClearing(false);
     }
   };
 
@@ -177,10 +196,18 @@ export default function JobsPage() {
             <div className="flex flex-col sm:flex-row items-center gap-4">
               <button
                 onClick={handleScrape}
-                disabled={scraping}
+                disabled={scraping || clearing}
                 className="btn-secondary whitespace-nowrap px-8"
               >
-                {scraping ? "Acquiring Intelligence..." : "Initialize AI Scrape"}
+                {scraping ? "Scraping is happening based upon preferences..." : "Initialize AI Scrape"}
+              </button>
+              
+              <button
+                onClick={handleClear}
+                disabled={scraping || clearing}
+                className="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 px-6 py-[10px] rounded-full text-sm font-semibold tracking-wide transition-colors whitespace-nowrap"
+              >
+                {clearing ? "Purging system..." : "Clear All Jobs"}
               </button>
             </div>
             {scrapeMsg && (

@@ -33,11 +33,70 @@ async def pipeline_job() -> None:
 
     async with async_session_factory() as db:
         try:
-            # Step 1: Scrape
+            # Fetch all active users
+            users_result = await db.execute(select(User).where(User.is_active.is_(True)))
+            users = users_result.scalars().all()
+            
             scraper_svc = ScraperService()
-            runs = await scraper_svc.scrape_all(db)
-            total_new = sum(r.jobs_new for r in runs)
-            logger.info("Pipeline: scraped {} new jobs", total_new)
+            total_new = 0
+            
+            from app.models.preference import Preference
+            from app.models.resume import Resume
+            from app.models.setting import Setting
+            import json
+            
+            for user in users:
+                # Check if system is paused for this user
+                setting_res = await db.execute(select(Setting).where(Setting.user_id == user.id, Setting.key == 'is_scraping_paused'))
+                pause_setting = setting_res.scalar_one_or_none()
+                if pause_setting and pause_setting.value == "true":
+                    logger.info("Pipeline: Scrape PAUSED for user {}", user.email)
+                    continue
+                    
+                # Fetch profile for query generation
+                pref = (await db.execute(select(Preference).where(Preference.user_id == user.id))).scalar_one_or_none()
+                resume = (await db.execute(select(Resume).where(Resume.user_id == user.id).order_by(Resume.version.desc()).limit(1))).scalar_one_or_none()
+                
+                search_query = "Software Engineer"
+                target_location = "Remote"
+                
+                if pref:
+                    titles = []
+                    try: 
+                        titles = json.loads(pref.desired_titles)
+                    except:
+                        pass
+                    if not titles and resume and resume.structured_data:
+                        try:
+                            rdata = json.loads(resume.structured_data)
+                            if rdata.get("skills"):
+                                titles = [f"{rdata['skills'][0]} Developer"] 
+                        except:
+                            pass
+                    if titles and len(titles) > 0:
+                        search_query = titles[0]
+
+                    locs = []
+                    try:
+                        locs = json.loads(pref.desired_locations)
+                    except:
+                        pass
+                        
+                    if locs and len(locs) > 0:
+                        target_location = locs[0]
+                    elif pref.country and pref.country != "Worldwide":
+                        target_location = pref.country
+                        
+                    if getattr(pref, "remote_only", False):
+                        target_location = "Remote"
+                    elif getattr(pref, "workplace_type", "Any") != "Any":
+                        target_location = f"{pref.workplace_type} {target_location}".strip()
+                        
+                logger.info("Pipeline: Scrape for {} | Q: [{}] L: [{}]", user.email, search_query, target_location)
+                runs = await scraper_svc.scrape_all(db, user_id=user.id, query=search_query, location=target_location)
+                total_new += sum(r.jobs_new for r in runs)
+                
+            logger.info("Pipeline: scraped {} new jobs across all users", total_new)
 
             # Step 2: Match (only if new jobs)
             if total_new > 0:
@@ -45,23 +104,13 @@ async def pipeline_job() -> None:
                 new_matches = await matcher_svc.match_all_pending(db)
                 logger.info("Pipeline: created {} new matches", len(new_matches))
 
-                # Step 3: Notify (only if new matches)
+                # Step 3: Notify
                 if new_matches:
                     notif_svc = NotificationService()
-                    # Notify all users who have new matches
-                    users_result = await db.execute(select(User).where(User.is_active.is_(True)))
-                    users = users_result.scalars().all()
-
-                    match_ids = [m.id for m in new_matches]
                     for user in users:
-                        user_match_ids = [
-                            m.id for m in new_matches
-                            if m.resume and m.resume.user_id == user.id
-                        ]
+                        user_match_ids = [m.id for m in new_matches if m.resume and m.resume.user_id == user.id]
                         if user_match_ids:
-                            sent = await notif_svc.send_match_notification(
-                                db, user.id, user.email, user_match_ids
-                            )
+                            sent = await notif_svc.send_match_notification(db, user.id, user.email, user_match_ids)
                             logger.info("Notified user {} of {} matches", user.email, sent)
 
             await db.commit()

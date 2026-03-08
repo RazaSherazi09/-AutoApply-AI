@@ -108,8 +108,8 @@ async def _run_scrape(user_id: int) -> None:
                     except:
                         pass
                 
-                if titles:
-                    search_query = " ".join(titles)
+                if titles and len(titles) > 0:
+                    search_query = titles[0]  # Take the primary title, not all of them
 
                 # Compile location
                 locs = []
@@ -118,17 +118,15 @@ async def _run_scrape(user_id: int) -> None:
                 except:
                     pass
                 
-                if pref.country and pref.country != "Worldwide":
-                    locs.append(pref.country)
-                    
-                if locs:
-                    target_location = ", ".join(locs)
-                    
-                if pref.workplace_type and pref.workplace_type != "Any":
-                    target_location = f"{pref.workplace_type} {target_location}".strip()
+                if locs and len(locs) > 0:
+                    target_location = locs[0]  # Take primary location
+                elif pref.country and pref.country != "Worldwide":
+                    target_location = pref.country
                     
                 if pref.remote_only:
                     target_location = "Remote"
+                elif pref.workplace_type and pref.workplace_type != "Any":
+                    target_location = f"{pref.workplace_type} {target_location}".strip()
 
             from loguru import logger
             logger.info("Starting smart scrape for User {} | Query: [{}] | Location: [{}]", user_id, search_query, target_location)
@@ -165,3 +163,30 @@ async def list_scraper_runs(
         }
         for r in runs
     ]
+
+@router.delete("/clear", status_code=status.HTTP_200_OK)
+async def clear_all_jobs(
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> dict:
+    """Clear all scraped jobs and associated matches/applications for the user."""
+    from sqlalchemy import delete
+    from app.models.match import Match
+    from app.models.application import Application
+
+    res = await db.execute(select(Job.id).where(Job.user_id == user.id))
+    job_ids = res.scalars().all()
+
+    if job_ids:
+        m_res = await db.execute(select(Match.id).where(Match.job_id.in_(job_ids)))
+        match_ids = m_res.scalars().all()
+
+        if match_ids:
+            await db.execute(delete(Application).where(Application.match_id.in_(match_ids)))
+            await db.execute(delete(Match).where(Match.id.in_(match_ids)))
+
+        await db.execute(delete(Job).where(Job.id.in_(job_ids)))
+        await db.commit()
+
+    return {"message": f"Successfully cleared {len(job_ids)} jobs."}
+

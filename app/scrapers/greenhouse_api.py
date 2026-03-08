@@ -15,7 +15,7 @@ from app.scrapers.base import BaseScraper
 
 # Default boards to scrape (users can configure more)
 DEFAULT_BOARDS: list[str] = [
-    # Add company board tokens here, e.g. "stripe", "figma"
+    "stripe", "figma", "discord", "airbnb", "brex", "plaid", "openai", "github", "gitlab"
 ]
 
 
