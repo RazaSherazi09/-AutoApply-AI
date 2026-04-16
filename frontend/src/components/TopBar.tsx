@@ -29,19 +29,19 @@ export default function TopBar() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 h-[72px] bg-[#0a0a0f]/80 backdrop-blur-xl border-b border-white/5 z-50 transition-all duration-300">
-        <div className="max-w-[1240px] mx-auto w-full h-full px-6 flex items-center justify-between">
+      <header className="fixed top-0 left-0 right-0 h-[72px] bg-[var(--background)]/95 backdrop-blur-sm border-b border-[var(--border)] z-50">
+        <div className="max-w-5xl mx-auto w-full h-full px-6 md:px-12 lg:px-16 flex items-center justify-between">
           
           {/* Logo */}
           <Link href="/dashboard" className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#06b6d4] to-[#8b5cf6] flex items-center justify-center text-white font-bold text-lg font-sans">
+            <div className="w-8 h-8 bg-[var(--accent)] flex items-center justify-center text-[var(--accent-fg)] font-bold text-lg" style={{ fontFamily: 'var(--font-display)' }}>
               A
             </div>
-            <span className="font-sans text-lg font-semibold tracking-wide text-white">AutoApply AI</span>
+            <span className="text-lg font-semibold tracking-tight text-[var(--foreground)]" style={{ fontFamily: 'var(--font-display)' }}>AutoApply</span>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-1 xl:gap-2">
+          <nav className="hidden md:flex items-center gap-0">
             {centerLinks.map((link) => {
               const active = pathname === link.href;
               return (
@@ -49,13 +49,14 @@ export default function TopBar() {
                   key={link.href}
                   href={link.href}
                   className={cn(
-                    "relative px-4 py-2 text-sm font-medium transition-colors duration-200 rounded-md hover:bg-white/5 hover:text-white",
-                    active ? "text-white" : "text-[#a39f98]"
+                    "relative px-4 py-2 text-sm font-medium transition-colors duration-150 tracking-wide uppercase",
+                    active ? "text-[var(--foreground)]" : "text-[var(--muted-fg)] hover:text-[var(--foreground)]"
                   )}
+                  style={{ letterSpacing: '0.05em' }}
                 >
                   {link.label}
                   {active && (
-                    <span className="absolute left-0 right-0 bottom-0 h-[2px] bg-gradient-to-r from-[#06b6d4] to-[#8b5cf6] rounded-t-sm" />
+                    <span className="absolute left-4 right-4 bottom-0 h-[2px] bg-[var(--accent)]" />
                   )}
                 </Link>
               );
@@ -63,34 +64,34 @@ export default function TopBar() {
           </nav>
 
           {/* Desktop Right Actions */}
-          <div className="hidden md:flex items-center gap-3">
-            <Link href="/preferences" className="w-10 h-10 rounded-full flex items-center justify-center text-[#a39f98] hover:text-white hover:bg-white/5 transition-colors">
-              <Sliders size={18} />
+          <div className="hidden md:flex items-center gap-2">
+            <Link href="/preferences" className="w-10 h-10 flex items-center justify-center text-[var(--muted-fg)] hover:text-[var(--foreground)] transition-colors">
+              <Sliders size={18} strokeWidth={1.5} />
             </Link>
-            <Link href="/settings" className="w-10 h-10 rounded-full flex items-center justify-center text-[#a39f98] hover:text-white hover:bg-white/5 transition-colors">
-              <Settings size={18} />
+            <Link href="/settings" className="w-10 h-10 flex items-center justify-center text-[var(--muted-fg)] hover:text-[var(--foreground)] transition-colors">
+              <Settings size={18} strokeWidth={1.5} />
             </Link>
             
-            <div className="h-6 w-px bg-white/10 mx-1" />
+            <div className="h-6 w-px bg-[var(--border)] mx-2" />
 
             <div className="flex items-center gap-3 pl-2 relative group cursor-pointer">
               <div className="flex flex-col items-end">
-                <span className="text-sm font-medium text-white max-w-[120px] truncate">{userEmail}</span>
-                <span className="text-[10px] text-[#06b6d4] uppercase tracking-widest font-semibold">Premium</span>
+                <span className="text-sm font-medium text-[var(--foreground)] max-w-[120px] truncate">{userEmail}</span>
+                <span className="text-[10px] text-[var(--accent)] uppercase font-mono tracking-[0.2em]">Active</span>
               </div>
-              <div className="w-10 h-10 rounded-full bg-[#0f0f23] border border-white/10 flex items-center justify-center text-[#8b5cf6]">
-                <User size={18} />
+              <div className="w-9 h-9 border border-[var(--border)] flex items-center justify-center text-[var(--muted-fg)]">
+                <User size={16} strokeWidth={1.5} />
               </div>
               
-              {/* Dropdown Menu (on hover) */}
-              <div className="absolute top-full right-0 pt-4 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-200">
-                <div className="w-48 bg-[#0f0f23] border border-white/5 rounded-xl shadow-xl overflow-hidden backdrop-blur-xl">
+              {/* Dropdown Menu */}
+              <div className="absolute top-full right-0 pt-4 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-150">
+                <div className="w-48 bg-[var(--card)] border border-[var(--border)] overflow-hidden">
                   <div className="p-2">
                     <button
                       onClick={logout}
-                      className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-red-400 hover:bg-red-500/10 transition-colors"
+                      className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-[var(--error)] hover:bg-[var(--error)]/10 transition-colors uppercase tracking-wider"
                     >
-                      <LogOut size={16} />
+                      <LogOut size={14} strokeWidth={1.5} />
                       Sign Out
                     </button>
                   </div>
@@ -101,19 +102,19 @@ export default function TopBar() {
 
           {/* Mobile Menu Toggle */}
           <button 
-            className="md:hidden w-10 h-10 flex items-center justify-center text-[#a39f98] hover:text-white"
+            className="md:hidden w-10 h-10 flex items-center justify-center text-[var(--muted-fg)] hover:text-[var(--foreground)]"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            {mobileMenuOpen ? <X size={24} strokeWidth={1.5} /> : <Menu size={24} strokeWidth={1.5} />}
           </button>
         </div>
       </header>
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-40 bg-[#0a0a0f] pt-[72px] flex flex-col md:hidden">
-          <nav className="flex-1 overflow-y-auto px-6 py-8 flex flex-col gap-4">
-            <p className="text-xs uppercase tracking-widest text-[#a39f98] mb-2 font-semibold">Main Menu</p>
+        <div className="fixed inset-0 z-40 bg-[var(--background)] pt-[72px] flex flex-col md:hidden">
+          <nav className="flex-1 overflow-y-auto px-6 py-8 flex flex-col gap-2">
+            <p className="label-upper mb-4">Navigation</p>
             {centerLinks.map((link) => {
               const active = pathname === link.href;
               return (
@@ -122,32 +123,32 @@ export default function TopBar() {
                   href={link.href}
                   onClick={() => setMobileMenuOpen(false)}
                   className={cn(
-                    "flex items-center text-lg font-medium p-3 rounded-lg transition-colors border",
+                    "flex items-center justify-between text-lg font-medium p-4 transition-colors border-b border-[var(--border)]",
                     active 
-                      ? "bg-white/5 text-white border-white/5" 
-                      : "text-[#a39f98] border-transparent hover:bg-white/5 hover:text-white"
+                      ? "text-[var(--foreground)]" 
+                      : "text-[var(--muted-fg)] hover:text-[var(--foreground)]"
                   )}
                 >
-                  {link.label}
-                  {active && <span className="ml-auto w-2 h-2 rounded-full bg-[#06b6d4]" />}
+                  <span className="uppercase tracking-wider">{link.label}</span>
+                  {active && <span className="w-2 h-[2px] bg-[var(--accent)]" />}
                 </Link>
               );
             })}
             
-            <div className="h-px w-full bg-white/5 my-4" />
-            <p className="text-xs uppercase tracking-widest text-[#a39f98] mb-2 font-semibold">Account</p>
+            <div className="h-px w-full bg-[var(--border)] my-6" />
+            <p className="label-upper mb-4">Account</p>
 
-            <Link href="/preferences" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 text-base font-medium p-3 rounded-lg text-[#a39f98] hover:bg-white/5 hover:text-white transition-colors">
-              <Sliders size={20} /> Preferences
+            <Link href="/preferences" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 text-base font-medium p-4 text-[var(--muted-fg)] hover:text-[var(--foreground)] transition-colors border-b border-[var(--border)] uppercase tracking-wider">
+              <Sliders size={18} strokeWidth={1.5} /> Preferences
             </Link>
-            <Link href="/settings" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 text-base font-medium p-3 rounded-lg text-[#a39f98] hover:bg-white/5 hover:text-white transition-colors">
-              <Settings size={20} /> Settings
+            <Link href="/settings" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 text-base font-medium p-4 text-[var(--muted-fg)] hover:text-[var(--foreground)] transition-colors border-b border-[var(--border)] uppercase tracking-wider">
+              <Settings size={18} strokeWidth={1.5} /> Settings
             </Link>
             <button
               onClick={() => { logout(); setMobileMenuOpen(false); }}
-              className="flex items-center gap-3 text-base font-medium p-3 rounded-lg text-red-400 hover:bg-red-500/10 transition-colors mt-auto mb-8"
+              className="flex items-center gap-3 text-base font-medium p-4 text-[var(--error)] hover:bg-[var(--error)]/10 transition-colors mt-auto mb-8 uppercase tracking-wider"
             >
-              <LogOut size={20} /> Sign Out ( {userEmail} )
+              <LogOut size={18} strokeWidth={1.5} /> Sign Out
             </button>
           </nav>
         </div>

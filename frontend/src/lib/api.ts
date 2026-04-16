@@ -31,7 +31,13 @@ async function request<T>(
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(error.detail || `API Error: ${res.status}`);
+    let errorMsg = error.detail;
+    if (Array.isArray(errorMsg)) {
+      errorMsg = errorMsg.map((e: any) => e.msg || "Validation Error").join(", ");
+    } else if (typeof errorMsg === 'object' && errorMsg !== null) {
+      errorMsg = JSON.stringify(errorMsg);
+    }
+    throw new Error(errorMsg || `API Error: ${res.status}`);
   }
 
   return res.json();

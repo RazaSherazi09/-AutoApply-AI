@@ -41,9 +41,9 @@ export default function UploadDropzone({ onUpload, uploading, uploadResult }: Up
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
         className={`
-          relative flex flex-col items-center justify-center p-12 md:p-16 rounded-3xl border-2 border-dashed
-          cursor-pointer overflow-hidden transition-all duration-300 min-h-[280px]
-          ${isDragging ? 'border-[#06b6d4] bg-[#06b6d4]/5 scale-[1.02]' : 'border-white/10 bg-[#0f0f23]/50 hover:border-[#8b5cf6]/40 hover:bg-white/5'}
+          relative flex flex-col items-center justify-center p-12 md:p-16 border-2 border-dashed
+          cursor-pointer overflow-hidden transition-all duration-150 min-h-[280px]
+          ${isDragging ? 'border-[var(--accent)] bg-[var(--accent)]/5' : 'border-[var(--border)] hover:border-[var(--border-hover)] bg-transparent'}
           ${uploading ? 'pointer-events-none opacity-50' : ''}
         `}
       >
@@ -58,23 +58,23 @@ export default function UploadDropzone({ onUpload, uploading, uploadResult }: Up
           }}
         />
 
-        <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 transition-colors duration-500 shadow-xl
-          ${isDragging ? 'bg-gradient-to-br from-[#06b6d4] to-[#8b5cf6] text-white shadow-[0_0_30px_rgba(6,182,212,0.3)]' : 'bg-[#0a0a0f] border border-white/5 group-hover:bg-white/5 text-[#06b6d4]'}`}
+        <div className={`w-16 h-16 flex items-center justify-center mb-6 border transition-colors duration-150
+          ${isDragging ? 'border-[var(--accent)] text-[var(--accent)]' : 'border-[var(--border)] text-[var(--muted-fg)]'}`}
         >
           {uploading ? (
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-current" />
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-[var(--accent)]" />
           ) : (
-            <UploadCloud size={32} />
+            <UploadCloud size={28} strokeWidth={1.5} />
           )}
         </div>
 
-        <h3 className="font-sans text-xl font-medium text-white mb-2 text-center">
-          {uploading ? "Analyzing document..." : "Drop your resume here or click to upload"}
+        <h3 className="text-xl md:text-2xl font-bold text-[var(--foreground)] mb-2 text-center tracking-tight" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.04em' }}>
+          {uploading ? "Analyzing document..." : "Drop your resume here"}
         </h3>
-        <p className="text-[#a39f98] text-sm">PDF formats only. Strict privacy maintained.</p>
+        <p className="text-[var(--muted-fg)] text-sm uppercase tracking-[0.1em]" style={{ fontFamily: 'var(--font-mono)' }}>PDF format — strict privacy</p>
         
         {uploadResult && (
-          <div className={`absolute bottom-6 font-medium text-sm flex items-center gap-2 px-4 py-2 rounded-full border bg-[#0a0a0f]/80 backdrop-blur ${uploadResult.includes('✅') ? 'text-green-400 border-green-500/20' : 'text-red-400 border-red-500/20'}`}>
+          <div className={`absolute bottom-6 font-mono text-sm flex items-center gap-2 px-4 py-2 border ${uploadResult.includes('✅') ? 'text-[var(--success)] border-[var(--success)]' : 'text-[var(--error)] border-[var(--error)]'}`}>
             {uploadResult}
           </div>
         )}

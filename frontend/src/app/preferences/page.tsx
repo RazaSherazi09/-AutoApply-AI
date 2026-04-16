@@ -3,9 +3,8 @@
 import { useEffect, useState } from "react";
 import { settingsApi } from "@/lib/api";
 import { motion } from "framer-motion";
-import { Compass, Sparkles, CheckCircle2 } from "lucide-react";
+import { Compass } from "lucide-react";
 import PageContainer from "@/components/PageContainer";
-import GlassCard from "@/components/GlassCard";
 
 export default function PreferencesPage() {
   const [titles, setTitles] = useState("");
@@ -52,7 +51,7 @@ export default function PreferencesPage() {
         country: country,
         workplace_type: workplaceType,
       });
-      setMsg("✅ Profile parameters successfully synchronized.");
+      setMsg("✅ Preferences saved.");
       setTimeout(() => setMsg(""), 3000);
     } catch (err: unknown) {
       setMsg(`❌ ${err instanceof Error ? err.message : "Save failed"}`);
@@ -68,32 +67,32 @@ export default function PreferencesPage() {
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} 
           className="page-title mb-2"
         >
-          Targeting Preferences
+          Preferences
         </motion.h1>
         <motion.p 
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
-          className="text-[#a39f98] max-w-2xl"
+          className="text-[var(--muted-fg)] text-lg max-w-xl"
         >
-          Fine-tune the neural matching engine's alignment vectors. What opportunities do you seek?
+          Configure the matching engine. What opportunities do you seek?
         </motion.p>
       </header>
 
       {loading ? (
         <div className="flex justify-center py-16">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-[#06b6d4]" />
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-[var(--accent)]" />
         </div>
       ) : (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ delay: 0.2, duration: 0.5, ease: [0.25, 0, 0, 1] }}
         >
           <form onSubmit={handleSave}>
-            <GlassCard hoverEffect={false} className="max-w-4xl p-8 md:p-12">
+            <div className="max-w-4xl border border-[var(--border)] p-8 md:p-12">
               
-              <div className="flex items-center gap-3 mb-10 pb-6 border-b border-white/5">
-                <Compass className="text-[#06b6d4]" size={24} />
-                <h2 className="text-2xl font-semibold tracking-wide text-white">Career Profile</h2>
+              <div className="flex items-center gap-3 mb-10 pb-6 border-b border-[var(--border)]">
+                <Compass size={20} strokeWidth={1.5} className="text-[var(--accent)]" />
+                <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-[var(--foreground)]" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.04em' }}>Career Profile</h2>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
@@ -101,27 +100,27 @@ export default function PreferencesPage() {
                 {/* Left Column */}
                 <div className="space-y-10">
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-[#a39f98] mb-3 pl-1">
-                      Desired Titles <span className="text-[#06b6d4]">*</span>
+                    <label className="label-upper block mb-3">
+                      Desired Titles <span className="text-[var(--accent)]">*</span>
                     </label>
                     <textarea
                       value={titles}
                       onChange={(e) => setTitles(e.target.value)}
-                      className="input-field min-h-[140px] resize-y font-medium text-sm leading-relaxed"
-                      placeholder="Principal Software Engineer&#10;Head of Engineering&#10;Director of Technology"
+                      className="input-field min-h-[140px] resize-y text-sm leading-relaxed"
+                      placeholder={"Software Engineer\nHead of Engineering\nDirector of Technology"}
                     />
-                    <p className="text-[11px] text-[#a39f98]/60 mt-2 font-medium pl-1">Separate each title with a new line.</p>
+                    <p className="label-upper mt-2 opacity-60">One per line</p>
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-[#a39f98] mb-3 pl-1">
-                      Target Geographies
+                    <label className="label-upper block mb-3">
+                      Target Locations
                     </label>
                     <textarea
                       value={locations}
                       onChange={(e) => setLocations(e.target.value)}
-                      className="input-field min-h-[140px] resize-y font-medium text-sm leading-relaxed"
-                      placeholder="San Francisco, CA&#10;London, UK&#10;New York City"
+                      className="input-field min-h-[140px] resize-y text-sm leading-relaxed"
+                      placeholder={"San Francisco, CA\nLondon, UK\nNew York City"}
                     />
                   </div>
                 </div>
@@ -129,76 +128,75 @@ export default function PreferencesPage() {
                 {/* Right Column */}
                 <div className="space-y-10">
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-[#a39f98] mb-3 pl-1">
-                      Excluded Entities
+                    <label className="label-upper block mb-3">
+                      Excluded Companies
                     </label>
                     <textarea
                       value={excluded}
                       onChange={(e) => setExcluded(e.target.value)}
-                      className="input-field min-h-[140px] resize-y font-medium text-sm leading-relaxed"
-                      placeholder="List companies to strictly avoid..."
+                      className="input-field min-h-[140px] resize-y text-sm leading-relaxed"
+                      placeholder="Companies to avoid..."
                     />
                   </div>
 
-                  <div className="bg-[#0a0a0f] border border-white/5 p-6 rounded-2xl relative overflow-hidden group shadow-inner">
-                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                      <Sparkles size={60} className="text-[#8b5cf6] -mr-4 -mt-4 text-glow" />
-                    </div>
-                    
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-[#06b6d4] mb-4">
-                      Compensation Floor
+                  {/* Salary */}
+                  <div className="border border-[var(--border)] p-6 relative">
+                    <div className="absolute top-0 left-0 h-[2px] w-12 bg-[var(--accent)]" />
+                    <label className="label-upper block mb-4 text-[var(--accent)]">
+                      Minimum Salary
                     </label>
-                    <div className="flex items-center gap-4 border-b border-white/10 pb-2 focus-within:border-[#06b6d4]/50 transition-colors relative z-10">
-                      <span className="text-3xl font-light text-white">$</span>
+                    <div className="flex items-end gap-3 border-b border-[var(--border)] pb-2 focus-within:border-[var(--accent)] transition-colors">
+                      <span className="text-3xl font-light text-[var(--foreground)]" style={{ fontFamily: 'var(--font-display)' }}>$</span>
                       <input
                         type="number"
                         value={minSalary}
                         onChange={(e) => setMinSalary(Number(e.target.value))}
-                        className="bg-transparent border-none outline-none text-4xl font-light w-full text-white"
+                        className="bg-transparent border-none outline-none text-4xl font-bold w-full text-[var(--foreground)]"
+                        style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.06em' }}
                         min={0}
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-[#a39f98] mb-3 pl-1">
+                    <label className="label-upper block mb-3">
                       Primary Country
                     </label>
                     <input
                       type="text"
                       value={country}
                       onChange={(e) => setCountry(e.target.value)}
-                      className="input-field max-w-full"
-                      placeholder="e.g. United States, United Kingdom, Worldwide"
+                      className="input-field"
+                      placeholder="e.g. United States, Worldwide"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-[#a39f98] mb-3 pl-1">
+                    <label className="label-upper block mb-3">
                       Workplace Type
                     </label>
                     <select
                       value={workplaceType}
                       onChange={(e) => setWorkplaceType(e.target.value)}
-                      className="bg-[#0a0a0f] border border-white/5 rounded-2xl px-5 py-4 w-full text-white appearance-none outline-none focus:border-[#06b6d4]/40 cursor-pointer"
+                      className="input-field appearance-none cursor-pointer"
                     >
-                      <option value="Any">Any Mode (Remote / On-site / Hybrid)</option>
+                      <option value="Any">Any (Remote / On-site / Hybrid)</option>
                       <option value="Remote">Strictly Remote</option>
-                      <option value="Hybrid">Hybrid Roles</option>
-                      <option value="On-site">On-site Office</option>
+                      <option value="Hybrid">Hybrid</option>
+                      <option value="On-site">On-site</option>
                     </select>
                   </div>
                 </div>
 
               </div>
 
-              {/* Footer Actions */}
-              <div className="mt-12 pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-6">
-                <div className="flex flex-col">
+              {/* Footer */}
+              <div className="mt-12 pt-8 border-t border-[var(--border)] flex flex-col sm:flex-row items-center justify-between gap-6">
+                <div>
                    {msg && (
                     <motion.span 
                       initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                      className={`text-sm tracking-wide font-medium flex items-center gap-2 px-4 py-2 rounded-full border bg-[#0a0a0f] ${msg.includes("✅") ? "text-green-400 border-green-500/20" : "text-red-400 border-red-500/20"}`}
+                      className={`text-sm font-mono tracking-wide flex items-center gap-2 ${msg.includes("✅") ? "text-[var(--success)]" : "text-[var(--error)]"}`}
                     >
                       {msg}
                     </motion.span>
@@ -208,13 +206,13 @@ export default function PreferencesPage() {
                 <button 
                   type="submit" 
                   disabled={saving} 
-                  className="btn-primary w-full sm:w-auto min-w-[200px]"
+                  className="btn-secondary w-full sm:w-auto px-10"
                 >
-                  {saving ? "Synchronizing..." : "Save Preferences"}
+                  {saving ? "Saving..." : "Save Preferences"}
                 </button>
               </div>
 
-            </GlassCard>
+            </div>
           </form>
         </motion.div>
       )}

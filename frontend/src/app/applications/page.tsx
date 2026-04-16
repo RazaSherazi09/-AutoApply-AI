@@ -5,7 +5,6 @@ import { applicationsApi, type Application } from "@/lib/api";
 import { motion } from "framer-motion";
 import { Send, CheckCircle2, Clock, XCircle, AlertCircle, RefreshCw } from "lucide-react";
 import PageContainer from "@/components/PageContainer";
-import GlassCard from "@/components/GlassCard";
 
 export default function ApplicationsPage() {
   const [apps, setApps] = useState<Application[]>([]);
@@ -35,11 +34,11 @@ export default function ApplicationsPage() {
   };
 
   const statusConfig: Record<string, { icon: any; color: string; label: string }> = {
-    PENDING: { icon: Clock, color: "text-amber-400", label: "Queued for deployment" },
-    SENT: { icon: Send, color: "text-[#06b6d4]", label: "Transmitted to parser" },
-    SUBMITTED: { icon: CheckCircle2, color: "text-green-500", label: "Submission verified" },
-    FAILED: { icon: XCircle, color: "text-red-500", label: "Encountered failure" },
-    MANUAL_REVIEW: { icon: AlertCircle, color: "text-amber-500", label: "Requires manual bypass" },
+    PENDING: { icon: Clock, color: "text-[var(--warning)]", label: "Queued" },
+    SENT: { icon: Send, color: "text-[var(--accent)]", label: "Transmitted" },
+    SUBMITTED: { icon: CheckCircle2, color: "text-[var(--success)]", label: "Submitted" },
+    FAILED: { icon: XCircle, color: "text-[var(--error)]", label: "Failed" },
+    MANUAL_REVIEW: { icon: AlertCircle, color: "text-[var(--warning)]", label: "Manual review" },
   };
 
   const getRelativeTime = (dateStr: string) => {
@@ -61,29 +60,29 @@ export default function ApplicationsPage() {
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} 
           className="page-title mb-2"
         >
-          Application Log
+          Applications
         </motion.h1>
         <motion.p 
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
-          className="text-[#a39f98]"
+          className="text-[var(--muted-fg)] text-lg"
         >
-          Real-time feed tracking exactly {total} payload deliveries.
+          Tracking {total} deliveries.
         </motion.p>
       </header>
 
       {loading ? (
         <div className="flex justify-center py-16">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-[#06b6d4]" />
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-[var(--accent)]" />
         </div>
       ) : apps.length === 0 ? (
-        <div className="text-center py-20 border border-white/5 rounded-2xl bg-[#0a0a0f]/50">
-          <p className="text-[#a39f98] font-sans text-lg mb-2 font-medium">The ledger is empty.</p>
-          <p className="text-sm text-[#a39f98]/60">Automated applications will appear here as they deploy.</p>
+        <div className="text-center py-20 border border-[var(--border)]">
+          <p className="text-2xl font-bold text-[var(--foreground)] tracking-tight mb-2" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.04em' }}>No applications yet.</p>
+          <p className="text-sm text-[var(--muted-fg)] font-mono uppercase tracking-wider">Applications will appear as they deploy</p>
         </div>
       ) : (
-        <div className="relative border-l border-white/10 ml-6 pl-8 space-y-12">
+        <div className="relative border-l-2 border-[var(--border)] ml-4 md:ml-6 pl-8 space-y-0">
           {apps.map((app, i) => {
-            const cfg = statusConfig[app.status] || { icon: AlertCircle, color: "text-[#a39f98]", label: "Unknown status" };
+            const cfg = statusConfig[app.status] || { icon: AlertCircle, color: "text-[var(--muted-fg)]", label: "Unknown" };
             const Icon = cfg.icon;
             
             return (
@@ -91,55 +90,53 @@ export default function ApplicationsPage() {
                 key={app.id}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.05, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                className="relative group"
+                transition={{ delay: i * 0.05, duration: 0.5, ease: [0.25, 0, 0, 1] }}
+                className="relative group pb-8"
               >
                 {/* Timeline Dot */}
-                <div className="absolute -left-[45px] top-1.5 w-6 h-6 rounded-full bg-[#0a0a0f] border border-white/20 flex items-center justify-center transition-colors group-hover:border-[#06b6d4]/50 group-hover:shadow-[0_0_10px_rgba(6,182,212,0.5)]">
-                  <Icon size={12} className={cfg.color} />
+                <div className="absolute -left-[41px] top-6 w-4 h-4 bg-[var(--background)] border-2 border-[var(--border)] group-hover:border-[var(--accent)] transition-colors flex items-center justify-center">
+                  <div className={`w-1.5 h-1.5 ${cfg.color === 'text-[var(--accent)]' ? 'bg-[var(--accent)]' : cfg.color === 'text-[var(--success)]' ? 'bg-[var(--success)]' : cfg.color === 'text-[var(--error)]' ? 'bg-[var(--error)]' : 'bg-[var(--warning)]'}`} />
                 </div>
 
-                <GlassCard className="p-6 md:p-8">
+                <div className="border border-[var(--border)] hover:border-[var(--border-hover)] transition-[border-color] duration-150 p-6 md:p-8">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                     
-                    <div className="flex items-start gap-4">
-                      <div>
-                        <h3 className="text-xl font-medium text-white mb-2 group-hover:text-[#06b6d4] transition-colors">
-                          Application initiated for Match #{app.match_id}
-                        </h3>
-                        <div className="flex items-center gap-3 text-sm">
-                          <span className={cfg.color}>{cfg.label}</span>
-                          <span className="text-white/20">•</span>
-                          <span className="text-[#a39f98] capitalize">{app.method} / {app.handler_type}</span>
-                        </div>
+                    <div>
+                      <h3 className="text-lg md:text-xl font-bold text-[var(--foreground)] mb-2 group-hover:text-[var(--accent)] transition-colors tracking-tight" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.04em' }}>
+                        Match #{app.match_id}
+                      </h3>
+                      <div className="flex items-center gap-3 text-sm">
+                        <span className={cfg.color}>{cfg.label}</span>
+                        <span className="text-[var(--border)]">—</span>
+                        <span className="text-[var(--muted-fg)] font-mono uppercase tracking-wider text-xs">{app.method} / {app.handler_type}</span>
                       </div>
                     </div>
 
                     <div className="flex flex-col md:items-end gap-2">
-                      <span className="text-sm text-[#a39f98]/70 font-mono">
+                      <span className="text-sm text-[var(--muted-fg)] font-mono">
                         {getRelativeTime(app.created_at)}
                       </span>
                       
                       {(app.status === "FAILED" || app.status === "MANUAL_REVIEW") && (
                         <button 
                           onClick={() => handleRetry(app.id)} 
-                          className="bg-white/5 hover:bg-white/10 text-white border border-white/10 hover:border-white/30 py-2 px-4 rounded-full text-xs font-medium flex items-center gap-2 transition-colors mt-2"
+                          className="btn-ghost text-xs flex items-center gap-2 py-1 px-2"
                         >
-                          <RefreshCw size={12} /> Retry Payload
+                          <RefreshCw size={12} strokeWidth={1.5} /> Retry
                         </button>
                       )}
                     </div>
                   </div>
 
                   {app.error_log && (
-                    <div className="mt-4 p-4 rounded-xl bg-[#0a0a0f] border border-red-500/10 text-red-400 font-mono text-xs md:text-sm overflow-x-auto shadow-inner">
-                      <div className="flex items-center gap-2 mb-2 text-[10px] uppercase font-bold tracking-widest text-red-500/70">
-                        <AlertCircle size={14} /> System Exception
+                    <div className="mt-4 p-4 border border-[var(--error)]/20 text-[var(--error)] font-mono text-xs md:text-sm overflow-x-auto">
+                      <div className="flex items-center gap-2 mb-2 label-upper text-[var(--error)]">
+                        <AlertCircle size={12} strokeWidth={1.5} /> Exception
                       </div>
                       {app.error_log}
                     </div>
                   )}
-                </GlassCard>
+                </div>
               </motion.div>
             );
           })}

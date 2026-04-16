@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 import { FileText, CheckCircle2 } from "lucide-react";
 import PageContainer from "@/components/PageContainer";
 import UploadDropzone from "@/components/UploadDropzone";
-import GlassCard from "@/components/GlassCard";
 
 export default function ResumesPage() {
   const [resumes, setResumes] = useState<Resume[]>([]);
@@ -34,7 +33,7 @@ export default function ResumesPage() {
     setUploadResult(null);
     try {
       const result = await resumesApi.upload(file);
-      setUploadResult(`✅ Document v${result.version} analyzed and integrated.`);
+      setUploadResult(`✅ Document v${result.version} analyzed.`);
       await loadResumes();
     } catch (err: unknown) {
       setUploadResult(`❌ ${err instanceof Error ? err.message : "Upload failed"}`);
@@ -44,7 +43,7 @@ export default function ResumesPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this resume? This action cannot be undone.")) return;
+    if (!confirm("Delete this resume? This cannot be undone.")) return;
     
     try {
       await resumesApi.delete(id);
@@ -65,17 +64,16 @@ export default function ResumesPage() {
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} 
           className="page-title mb-2"
         >
-          Candidate Documents
+          Resumes
         </motion.h1>
         <motion.p 
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
-          className="text-[#a39f98]"
+          className="text-[var(--muted-fg)] text-lg"
         >
-          Maintain your dossier. Documents are securely digitized into matching vectors.
+          Documents are parsed into matching vectors.
         </motion.p>
       </header>
 
-      {/* Drag & Drop Component */}
       <UploadDropzone 
         onUpload={handleUpload}
         uploading={uploading}
@@ -86,19 +84,21 @@ export default function ResumesPage() {
       <motion.div 
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
       >
-        <h2 className="text-xl font-semibold tracking-wide text-white mb-8 flex items-center justify-between border-b border-white/5 pb-4">
-          <span>Dossier Archive</span>
-          <span className="text-sm font-sans tracking-widest text-[#a39f98] font-semibold">{total} Files</span>
-        </h2>
+        <div className="flex items-center justify-between border-b border-[var(--border)] pb-4 mb-8">
+          <h2 className="text-xl md:text-2xl font-bold tracking-tight text-[var(--foreground)]" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.04em' }}>
+            Archive
+          </h2>
+          <span className="label-upper">{total} Files</span>
+        </div>
 
         {loading ? (
           <div className="flex justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-[#06b6d4]" />
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-[var(--accent)]" />
           </div>
         ) : resumes.length === 0 ? (
-          <div className="text-center py-20 border border-white/5 rounded-2xl bg-[#0a0a0f]/50">
-            <p className="text-[#a39f98] font-sans text-lg mb-2 font-medium">Archive empty.</p>
-            <p className="text-sm text-[#a39f98]/60">Upload your PDF resume to begin matching and applying.</p>
+          <div className="text-center py-20 border border-[var(--border)]">
+            <p className="text-2xl font-bold text-[var(--foreground)] tracking-tight mb-2" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.04em' }}>Empty.</p>
+            <p className="text-sm text-[var(--muted-fg)] font-mono uppercase tracking-wider">Upload a PDF to begin</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -111,60 +111,63 @@ export default function ResumesPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 * i, duration: 0.4 }}
                 >
-                  <GlassCard className="flex flex-col h-full hover:border-[#06b6d4]/20 group">
+                  <div className="border border-[var(--border)] hover:border-[var(--border-hover)] transition-[border-color] duration-150 p-6 md:p-8 flex flex-col h-full relative group">
+                    {/* Accent bar */}
+                    <div className="absolute top-0 left-0 h-[2px] w-12 bg-[var(--accent)]" />
+
                     <div className="flex items-start justify-between mb-6">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-[#0a0a0f] flex items-center justify-center text-[#06b6d4] border border-white/5 shadow-inner">
-                          <FileText size={20} />
+                        <div className="w-10 h-10 border border-[var(--border)] flex items-center justify-center text-[var(--muted-fg)] group-hover:text-[var(--accent)] group-hover:border-[var(--accent)] transition-colors">
+                          <FileText size={18} strokeWidth={1.5} />
                         </div>
                         <div>
-                          <h4 className="font-sans font-semibold text-lg text-white group-hover:text-[#06b6d4] transition-colors line-clamp-1">{r.file_name}</h4>
-                          <p className="text-xs font-medium text-[#a39f98] uppercase tracking-wider mt-1">Version {r.version} • {new Date(r.created_at).toLocaleDateString()}</p>
+                          <h4 className="font-bold text-lg text-[var(--foreground)] group-hover:text-[var(--accent)] transition-colors line-clamp-1 tracking-tight" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.04em' }}>{r.file_name}</h4>
+                          <p className="label-upper mt-1">Version {r.version} — {new Date(r.created_at).toLocaleDateString()}</p>
                         </div>
                       </div>
                       <div className="flex flex-col items-end gap-2">
-                        <span className="badge badge-primary bg-[#06b6d4]/10 text-[#06b6d4] border-[#06b6d4]/20 flex items-center gap-1.5 px-3 py-1">
-                          <CheckCircle2 size={12} className="shrink-0" /> <span className="pt-px tracking-wider">Active</span>
+                        <span className="badge badge-primary flex items-center gap-1.5">
+                          <CheckCircle2 size={10} strokeWidth={1.5} /> Active
                         </span>
                         <button 
                           onClick={() => handleDelete(r.id)}
-                          className="text-[10px] font-bold uppercase tracking-widest text-[#a39f98] hover:text-red-400 transition-colors mt-2 underline underline-offset-4 decoration-white/20 hover:decoration-red-400/50"
+                          className="label-upper text-[var(--muted-fg)] hover:text-[var(--error)] transition-colors underline underline-offset-4 decoration-[var(--border)] hover:decoration-[var(--error)]"
                         >
                           delete
                         </button>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-y-4 gap-x-6 text-sm mb-6 border-y border-white/5 py-4">
+                    <div className="grid grid-cols-2 gap-y-4 gap-x-6 text-sm mb-6 border-y border-[var(--border)] py-4">
                       <div>
-                        <span className="text-[#a39f98] text-[10px] uppercase font-bold tracking-widest block mb-1">Extracted Entity</span>
-                        <p className="font-medium text-white line-clamp-1">{data.name || "Undisclosed"}</p>
+                        <span className="label-upper block mb-1">Name</span>
+                        <p className="font-medium text-[var(--foreground)] line-clamp-1">{data.name || "—"}</p>
                       </div>
                       <div>
-                        <span className="text-[#a39f98] text-[10px] uppercase font-bold tracking-widest block mb-1">Experience Level</span>
-                        <p className="font-medium text-white">{data.experience_years || 0} years verified</p>
+                        <span className="label-upper block mb-1">Experience</span>
+                        <p className="font-medium text-[var(--foreground)]">{data.experience_years || 0} years</p>
                       </div>
                       <div className="col-span-2">
-                        <span className="text-[#a39f98] text-[10px] uppercase font-bold tracking-widest block mb-1">Contact Vector</span>
-                        <p className="font-medium text-white">{data.email || "N/A"}</p>
+                        <span className="label-upper block mb-1">Contact</span>
+                        <p className="font-medium text-[var(--foreground)]">{data.email || "N/A"}</p>
                       </div>
                     </div>
 
                     {data.skills && data.skills.length > 0 && (
                       <div className="flex flex-wrap gap-2 mt-auto">
                         {data.skills.slice(0, 10).map((skill: string) => (
-                          <span key={skill} className="px-2.5 py-1 text-[10px] uppercase font-bold tracking-widest rounded border border-white/5 text-[#a39f98] bg-[#0a0a0f]">
+                          <span key={skill} className="badge badge-neutral">
                             {skill}
                           </span>
                         ))}
                         {data.skills.length > 10 && (
-                          <span className="px-2.5 py-1 text-[10px] uppercase font-bold tracking-widest rounded text-[#a39f98] flex items-center">
+                          <span className="label-upper self-center">
                             +{data.skills.length - 10}
                           </span>
                         )}
                       </div>
                     )}
-                  </GlassCard>
+                  </div>
                 </motion.div>
               );
             })}

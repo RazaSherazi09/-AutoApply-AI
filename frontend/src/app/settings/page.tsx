@@ -5,7 +5,6 @@ import { settingsApi } from "@/lib/api";
 import { motion } from "framer-motion";
 import { Settings2, ShieldCheck, Activity } from "lucide-react";
 import PageContainer from "@/components/PageContainer";
-import GlassCard from "@/components/GlassCard";
 
 export default function SettingsPage() {
   const [scrapeInterval, setScrapeInterval] = useState(60);
@@ -28,7 +27,7 @@ export default function SettingsPage() {
           setMaxApps(parseInt(config.max_applications_per_day));
         if (config.required_keywords) setKeywords(config.required_keywords);
       } catch {
-        // ignore — will use defaults
+        // ignore
       } finally {
         setLoading(false);
       }
@@ -47,7 +46,7 @@ export default function SettingsPage() {
         max_applications_per_day: String(maxApps),
         required_keywords: keywords,
       });
-      setMsg("✅ System configuration preserved securely.");
+      setMsg("✅ Configuration saved.");
       setTimeout(() => setMsg(""), 3000);
     } catch (err: unknown) {
       setMsg(`❌ ${err instanceof Error ? err.message : "Save failed"}`);
@@ -63,124 +62,129 @@ export default function SettingsPage() {
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} 
           className="page-title mb-2"
         >
-          System Configuration
+          Settings
         </motion.h1>
         <motion.p 
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
-          className="text-[#a39f98] max-w-2xl"
+          className="text-[var(--muted-fg)] text-lg max-w-xl"
         >
-          Configure the underlying operational parameters of your automation agent.
+          Operational parameters of your automation agent.
         </motion.p>
       </header>
 
       {loading ? (
         <div className="flex justify-center py-16">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-[#06b6d4]" />
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-[var(--accent)]" />
         </div>
       ) : (
-        <div className="grid grid-cols-1 xl:grid-cols-[1fr_350px] gap-8 items-start">
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-8 items-start">
           
           <motion.form 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ delay: 0.2, duration: 0.5, ease: [0.25, 0, 0, 1] }}
             onSubmit={handleSave} 
           >
-            <GlassCard hoverEffect={false} className="p-8 md:p-12">
-              <div className="flex items-center gap-3 mb-10 pb-6 border-b border-white/5">
-                <Settings2 className="text-[#06b6d4]" size={24} />
-                <h2 className="text-2xl font-semibold tracking-wide text-white">Execution Parameters</h2>
+            <div className="border border-[var(--border)] p-8 md:p-12">
+              <div className="flex items-center gap-3 mb-10 pb-6 border-b border-[var(--border)]">
+                <Settings2 size={20} strokeWidth={1.5} className="text-[var(--accent)]" />
+                <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-[var(--foreground)]" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.04em' }}>Parameters</h2>
               </div>
 
               <div className="space-y-12">
                 
                 {/* Match Threshold */}
-                <div className="bg-[#0a0a0f] p-6 rounded-2xl border border-white/5 shadow-inner">
+                <div className="border border-[var(--border)] p-6 relative">
+                  <div className="absolute top-0 left-0 h-[2px] w-12 bg-[var(--accent)]" />
                   <div className="flex items-center justify-between mb-4">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-[#06b6d4]">
-                      Calibration Threshold
+                    <label className="label-upper text-[var(--accent)]">
+                      Match Threshold
                     </label>
-                    <span className="text-3xl font-light font-sans text-white tracking-tight">
-                      {(matchThreshold * 100).toFixed(0)}<span className="text-lg text-[#a39f98] font-normal">%</span>
+                    <span className="text-4xl font-bold text-[var(--foreground)] tracking-tighter" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.06em' }}>
+                      {(matchThreshold * 100).toFixed(0)}<span className="text-lg text-[var(--muted-fg)]">%</span>
                     </span>
                   </div>
                   <input
                     type="range"
                     value={matchThreshold}
                     onChange={(e) => setMatchThreshold(Number(e.target.value))}
-                    className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-[#06b6d4]"
+                    className="w-full h-[3px] appearance-none cursor-pointer accent-[var(--accent)]"
                     style={{
-                      background: `linear-gradient(to right, #06b6d4 0%, #8b5cf6 ${matchThreshold * 100}%, rgba(255,255,255,0.05) ${matchThreshold * 100}%, rgba(255,255,255,0.05) 100%)`,
+                      background: `linear-gradient(to right, var(--accent) 0%, var(--accent) ${matchThreshold * 100}%, var(--border) ${matchThreshold * 100}%, var(--border) 100%)`,
                     }}
                     min={0}
                     max={1}
                     step={0.05}
                   />
-                  <div className="flex justify-between text-[10px] uppercase font-semibold tracking-widest text-[#a39f98] mt-4">
-                    <span>Broad Match (0%)</span>
-                    <span>Exact Profile Only (100%)</span>
+                  <div className="flex justify-between label-upper mt-4 opacity-60">
+                    <span>Broad (0%)</span>
+                    <span>Exact (100%)</span>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {/* Scrape Interval */}
-                  <div className="bg-[#0a0a0f] p-6 rounded-2xl border border-white/5 shadow-inner">
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-[#a39f98] mb-4">
-                      Synchronization Interval
+                  <div className="border border-[var(--border)] p-6 relative">
+                    <div className="absolute top-0 left-0 h-[2px] w-8 bg-[var(--accent)]" />
+                    <label className="label-upper block mb-4">
+                      Sync Interval
                     </label>
-                    <div className="flex items-end gap-3 border-b border-white/10 pb-2 focus-within:border-[#06b6d4]/50 transition-colors">
+                    <div className="flex items-end gap-3 border-b border-[var(--border)] pb-2 focus-within:border-[var(--accent)] transition-colors">
                       <input
                         type="number"
                         value={scrapeInterval}
                         onChange={(e) => setScrapeInterval(Number(e.target.value))}
-                        className="bg-transparent border-none outline-none text-3xl font-light w-full text-white"
+                        className="bg-transparent border-none outline-none text-4xl font-bold w-full text-[var(--foreground)]"
+                        style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.06em' }}
                         min={5}
                       />
-                      <span className="text-sm text-[#a39f98] pb-1">min</span>
+                      <span className="text-sm text-[var(--muted-fg)] pb-1 font-mono">min</span>
                     </div>
                   </div>
 
                   {/* Max Applications */}
-                  <div className="bg-[#0a0a0f] p-6 rounded-2xl border border-white/5 shadow-inner">
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-[#a39f98] mb-4">
-                      Daily Activity Limit
+                  <div className="border border-[var(--border)] p-6 relative">
+                    <div className="absolute top-0 left-0 h-[2px] w-8 bg-[var(--accent)]" />
+                    <label className="label-upper block mb-4">
+                      Daily Limit
                     </label>
-                    <div className="flex items-end gap-3 border-b border-white/10 pb-2 focus-within:border-[#8b5cf6]/50 transition-colors">
+                    <div className="flex items-end gap-3 border-b border-[var(--border)] pb-2 focus-within:border-[var(--accent)] transition-colors">
                       <input
                         type="number"
                         value={maxApps}
                         onChange={(e) => setMaxApps(Number(e.target.value))}
-                        className="bg-transparent border-none outline-none text-3xl font-light w-full text-white"
+                        className="bg-transparent border-none outline-none text-4xl font-bold w-full text-[var(--foreground)]"
+                        style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.06em' }}
                         min={1}
                         max={100}
                       />
-                      <span className="text-sm text-[#a39f98] pb-1">apps</span>
+                      <span className="text-sm text-[var(--muted-fg)] pb-1 font-mono">apps</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Required Keywords */}
+                {/* Keywords */}
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-[#a39f98] mb-3 pl-1">
-                    Strict Keywords Constraint
+                  <label className="label-upper block mb-3">
+                    Required Keywords
                   </label>
                   <input
                     type="text"
                     value={keywords}
                     onChange={(e) => setKeywords(e.target.value)}
-                    className="input-field max-w-full"
-                    placeholder="e.g. python, remote, senior..."
+                    className="input-field"
+                    placeholder="python, remote, senior..."
                   />
-                  <p className="text-sm text-[#a39f98]/60 mt-3 font-medium pl-1">Opportunities lacking these keywords will be automatically discarded.</p>
+                  <p className="label-upper mt-3 opacity-60">Jobs without these keywords are discarded</p>
                 </div>
 
-                {/* Footer Actions */}
-                <div className="pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-6">
-                  <div className="flex flex-col">
+                {/* Footer */}
+                <div className="pt-8 border-t border-[var(--border)] flex flex-col sm:flex-row items-center justify-between gap-6">
+                  <div>
                      {msg && (
                       <motion.span 
                         initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                        className={`text-sm tracking-wide font-medium flex items-center gap-2 px-4 py-2 rounded-full border bg-[#0a0a0f] ${msg.includes("✅") ? "text-green-400 border-green-500/20" : "text-red-400 border-red-500/20"}`}
+                        className={`text-sm font-mono tracking-wide ${msg.includes("✅") ? "text-[var(--success)]" : "text-[var(--error)]"}`}
                       >
                         {msg}
                       </motion.span>
@@ -190,66 +194,52 @@ export default function SettingsPage() {
                   <button 
                     type="submit" 
                     disabled={saving} 
-                    className="btn-primary w-full sm:w-auto min-w-[200px]"
+                    className="btn-secondary w-full sm:w-auto px-10"
                   >
-                    {saving ? "Updating..." : "Enforce Parameters"}
+                    {saving ? "Saving..." : "Save Settings"}
                   </button>
                 </div>
 
               </div>
-            </GlassCard>
+            </div>
           </motion.form>
 
-          {/* Info Sidebar */}
+          {/* Sidebar */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ delay: 0.3, duration: 0.5, ease: [0.25, 0, 0, 1] }}
             className="space-y-6"
           >
-            <GlassCard hoverEffect={false} className="p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <ShieldCheck size={20} className="text-[#06b6d4]" />
-                <h3 className="font-semibold text-lg text-white">Security Protocol</h3>
-              </div>
-              <p className="text-sm text-[#a39f98] leading-relaxed mb-6">
-                Critical credentials, including SMTP protocols and cryptographic API keys, are rigorously isolated from the presentation layer.
-              </p>
-              <div className="bg-[#0a0a0f] border border-white/5 rounded-xl p-4 flex flex-col gap-2 shadow-inner">
-                <span className="text-[10px] uppercase font-bold text-[#a39f98] tracking-widest">Environment File</span>
-                <code className="text-[#8b5cf6] text-sm font-mono tracking-tight">.env (Local only)</code>
-              </div>
-            </GlassCard>
-
-            <GlassCard hoverEffect={false} className="p-6">
+            <div className="border border-[var(--border)] p-6">
               <div className="flex items-center gap-3 mb-6">
-                <Activity size={20} className="text-[#06b6d4]" />
-                <h3 className="font-semibold text-lg text-white">System Status</h3>
+                <Activity size={18} strokeWidth={1.5} className="text-[var(--accent)]" />
+                <h3 className="font-bold text-lg text-[var(--foreground)] tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>Status</h3>
               </div>
               <div className="space-y-4">
-                <div className="flex items-center justify-between pb-4 border-b border-white/5 text-sm">
-                  <span className="text-[#a39f98] font-medium">Background Sync</span>
+                <div className="flex items-center justify-between pb-4 border-b border-[var(--border)] text-sm">
+                  <span className="text-[var(--muted-fg)]">Background Sync</span>
                   <div className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_#22c55e]" />
-                    <span className="text-green-400 font-semibold tracking-wide">Active</span>
+                    <span className="w-2 h-[2px] bg-[var(--success)]" />
+                    <span className="text-[var(--success)] font-bold uppercase tracking-wider text-xs font-mono">Active</span>
                   </div>
                 </div>
-                <div className="flex items-center justify-between pb-4 border-b border-white/5 text-sm">
-                  <span className="text-[#a39f98] font-medium">Matching Engine</span>
+                <div className="flex items-center justify-between pb-4 border-b border-[var(--border)] text-sm">
+                  <span className="text-[var(--muted-fg)]">Match Engine</span>
                   <div className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]" />
-                    <span className="text-green-400 font-semibold tracking-wide">Nominal</span>
+                    <span className="w-2 h-[2px] bg-[var(--success)]" />
+                    <span className="text-[var(--success)] font-bold uppercase tracking-wider text-xs font-mono">Nominal</span>
                   </div>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-[#a39f98] font-medium">Webdriver Core</span>
+                  <span className="text-[var(--muted-fg)]">Browser Core</span>
                   <div className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#06b6d4] shadow-[0_0_8px_#06b6d4]" />
-                    <span className="text-[#06b6d4] font-semibold tracking-wide">Ready</span>
+                    <span className="w-2 h-[2px] bg-[var(--accent)]" />
+                    <span className="text-[var(--accent)] font-bold uppercase tracking-wider text-xs font-mono">Ready</span>
                   </div>
                 </div>
               </div>
-            </GlassCard>
+            </div>
           </motion.div>
         </div>
       )}

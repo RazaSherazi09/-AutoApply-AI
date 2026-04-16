@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 import { Briefcase, Target, Send, Activity, FileText, Clock, Play, Pause } from "lucide-react";
 import PageContainer from "@/components/PageContainer";
 import StatCard from "@/components/StatCard";
-import GlassCard from "@/components/GlassCard";
 
 export default function DashboardPage() {
   const [stats, setStats] = useState({ jobs: 0, matches: 0, apps: 0, resumes: 0 });
@@ -30,7 +29,6 @@ export default function DashboardPage() {
         const totalIntervalMs = intervalMins * 60 * 1000;
         
         if (elapsed >= totalIntervalMs) {
-          // If past due, fake a recent reset for the timer visual or assume it just ran
           localStorage.setItem('lastScrapeTime', now.toString());
           nextTime = now + totalIntervalMs;
         } else {
@@ -96,7 +94,6 @@ export default function DashboardPage() {
       await settingsApi.updateConfig({ is_scraping_paused: newState ? "true" : "false" });
       setIsPaused(newState);
       if (!newState) {
-         // Reset timer when unpausing
          localStorage.setItem('lastScrapeTime', Date.now().toString());
       }
     } catch {
@@ -109,13 +106,13 @@ export default function DashboardPage() {
   const statCards = [
     { label: "Jobs Found", value: stats.jobs, icon: Briefcase, delay: 0 },
     { label: "Pending Matches", value: stats.matches, icon: Target, delay: 0.1 },
-    { label: "Applications Sent", value: stats.apps, icon: Send, delay: 0.2 },
+    { label: "Applications", value: stats.apps, icon: Send, delay: 0.2 },
     { label: "Resumes", value: stats.resumes, icon: FileText, delay: 0.3 },
   ];
 
   return (
     <PageContainer>
-      <header className="mb-12">
+      <header className="mb-16">
         <motion.h1 
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} 
           className="page-title"
@@ -124,48 +121,45 @@ export default function DashboardPage() {
         </motion.h1>
         <motion.p 
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
-          className="text-[#a39f98] max-w-2xl"
+          className="text-[var(--muted-fg)] text-lg max-w-xl"
         >
-          Your highly-targeted automation campaign performance at a glance.
+          Campaign performance at a glance.
         </motion.p>
       </header>
       
-      {/* Synchronization Timer Banner */}
+      {/* Synchronization Timer */}
       <motion.div 
         initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-        className="mb-8 bg-[#0a0a0f] border border-white/5 rounded-2xl p-4 flex items-center justify-between"
+        className="mb-10 border border-[var(--border)] p-5 md:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6"
       >
-        <div className="flex items-center gap-3">
-           <div className="w-10 h-10 rounded-full bg-[#06b6d4]/10 border border-[#06b6d4]/20 flex items-center justify-center">
-             <Clock size={18} className="text-[#06b6d4]" />
-           </div>
+        <div className="flex items-center gap-4">
+           <Clock size={20} strokeWidth={1.5} className="text-[var(--accent)]" />
            <div>
-             <h3 className="text-white text-sm font-semibold tracking-wide">Synchronization Timer</h3>
-             <p className="text-[#a39f98] text-xs">Interval set to {intervalMins} minutes</p>
+             <h3 className="text-[var(--foreground)] text-sm font-bold uppercase tracking-[0.1em]" style={{ fontFamily: 'var(--font-mono)' }}>Sync Timer</h3>
+             <p className="text-[var(--muted-fg)] text-xs font-mono">Interval: {intervalMins} minutes</p>
            </div>
         </div>
         <div className="flex flex-col sm:flex-row sm:items-center gap-6">
-           {/* Actions */}
-           <div className="flex items-center gap-3 border-r border-white/10 pr-6">
+           <div className="flex items-center gap-3">
               {isPaused ? (
                  <button 
                   onClick={togglePause} disabled={toggling}
-                  className="bg-green-500/10 hover:bg-green-500/20 text-green-400 border border-green-500/20 px-4 py-2 rounded-full flex items-center gap-2 text-xs font-semibold tracking-wide transition-colors"
+                  className="btn-success text-xs py-2 px-5 flex items-center gap-2"
                  >
-                   <Play size={14} /> Resume Scrape
+                   <Play size={12} strokeWidth={1.5} /> Resume
                  </button>
               ) : (
                  <button 
                   onClick={togglePause} disabled={toggling}
-                  className="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 px-4 py-2 rounded-full flex items-center gap-2 text-xs font-semibold tracking-wide transition-colors"
+                  className="btn-danger text-xs py-2 px-5 flex items-center gap-2"
                  >
-                   <Pause size={14} /> Stop Scrape
+                   <Pause size={12} strokeWidth={1.5} /> Pause
                  </button>
               )}
            </div>
-           <div className="text-right">
-             <p className="text-[#a39f98] text-[10px] uppercase tracking-widest font-bold mb-1">Next AI Scrape In</p>
-             <p className={`text-xl font-mono font-light tracking-tight ${isPaused ? 'text-red-400' : 'text-[#06b6d4]'}`}>
+           <div className="border-l border-[var(--border)] pl-6">
+             <p className="label-upper mb-1">Next Scrape</p>
+             <p className={`text-2xl font-bold tracking-tighter ${isPaused ? 'text-[var(--error)]' : 'text-[var(--accent)]'}`} style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.06em' }}>
                 {isPaused ? "PAUSED" : nextScrapeTime}
              </p>
            </div>
@@ -174,69 +168,65 @@ export default function DashboardPage() {
 
       {loading ? (
         <div className="flex items-center justify-center h-40">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-[#06b6d4]" />
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-[var(--accent)]" />
         </div>
       ) : (
         <>
-          {/* Elegant Stat Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          {/* Stat Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
             {statCards.map((card) => (
               <StatCard key={card.label} {...card} />
             ))}
           </div>
 
-          {/* Scraper Health Activity Feed */}
+          {/* Scraper Runs Table */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
           >
-            <GlassCard hoverEffect={false}>
-              <div className="flex items-center justify-between mb-8 border-b border-white/5 pb-5">
-                <h2 className="text-xl font-semibold tracking-wide text-white">Latest Execution Batch</h2>
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#0a0a0f] border border-white/5">
-                  <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_#22c55e]" />
-                  <span className="text-xs uppercase tracking-widest font-semibold text-[#a39f98]">System Active</span>
+            <div className="border border-[var(--border)]">
+              <div className="flex items-center justify-between p-6 md:p-8 border-b border-[var(--border)]">
+                <h2 className="text-xl md:text-2xl font-bold tracking-tight text-[var(--foreground)]" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.04em' }}>
+                  Latest Executions
+                </h2>
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-[2px] bg-[var(--success)]" />
+                  <span className="label-upper">Active</span>
                 </div>
               </div>
 
               {runs.length === 0 ? (
-                <p className="text-center text-[#a39f98] py-12 text-sm font-medium">No recent activity detected.</p>
+                <p className="text-center text-[var(--muted-fg)] py-12 text-sm font-mono uppercase tracking-wider">No recent activity.</p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse min-w-[700px]">
                     <thead>
-                      <tr className="border-b border-white/5 text-xs uppercase tracking-widest text-[#a39f98]">
-                        <th className="font-semibold py-3 px-4">Provider</th>
-                        <th className="font-semibold py-3 px-4">Status</th>
-                        <th className="font-semibold py-3 px-4 text-center">Jobs Analyzed</th>
-                        <th className="font-semibold py-3 px-4 text-center">New Opportunities</th>
-                        <th className="font-semibold py-3 px-4 text-right">Duration</th>
-                        <th className="font-semibold py-3 px-4 text-right">Time</th>
+                      <tr className="border-b border-[var(--border)]">
+                        <th className="label-upper py-4 px-6">Provider</th>
+                        <th className="label-upper py-4 px-6">Status</th>
+                        <th className="label-upper py-4 px-6 text-center">Analyzed</th>
+                        <th className="label-upper py-4 px-6 text-center">New</th>
+                        <th className="label-upper py-4 px-6 text-right">Duration</th>
+                        <th className="label-upper py-4 px-6 text-right">Time</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/5">
+                    <tbody className="divide-y divide-[var(--border)]">
                       {runs.map((run) => (
-                        <tr key={run.id} className="hover:bg-white/[0.02] transition-colors group">
-                          <td className="py-4 px-4">
+                        <tr key={run.id} className="hover:bg-[var(--muted)]/50 transition-colors group">
+                          <td className="py-4 px-6">
                             <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[#0a0a0f] border border-white/5 group-hover:border-[#06b6d4]/20 transition-colors">
-                                {run.status === "SUCCESS" ? (
-                                  <Activity size={14} className="text-[#06b6d4]" />
-                                ) : (
-                                  <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                                )}
-                              </div>
-                              <span className="text-sm font-medium text-white">{run.provider}</span>
+                              <Activity size={14} strokeWidth={1.5} className={run.status === "SUCCESS" ? "text-[var(--accent)]" : "text-[var(--error)]"} />
+                              <span className="text-sm font-medium text-[var(--foreground)]">{run.provider}</span>
                             </div>
                           </td>
-                          <td className="py-4 px-4">
+                          <td className="py-4 px-6">
                             <span className={`badge ${run.status === "SUCCESS" ? "badge-success" : "badge-error"}`}>
                               {run.status}
                             </span>
                           </td>
-                          <td className="py-4 px-4 text-center text-sm text-white/80">{run.jobs_found}</td>
-                          <td className="py-4 px-4 text-center text-sm text-white/80 font-medium">{run.jobs_new}</td>
-                          <td className="py-4 px-4 text-right text-sm text-white/50">{run.duration_seconds?.toFixed(1)}s</td>
-                          <td className="py-4 px-4 text-right text-xs uppercase tracking-widest text-[#a39f98]">
+                          <td className="py-4 px-6 text-center text-sm text-[var(--foreground)] font-mono">{run.jobs_found}</td>
+                          <td className="py-4 px-6 text-center text-sm text-[var(--foreground)] font-mono font-bold">{run.jobs_new}</td>
+                          <td className="py-4 px-6 text-right text-sm text-[var(--muted-fg)] font-mono">{run.duration_seconds?.toFixed(1)}s</td>
+                          <td className="py-4 px-6 text-right label-upper">
                             {run.started_at ? new Date(run.started_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "N/A"}
                           </td>
                         </tr>
@@ -245,7 +235,7 @@ export default function DashboardPage() {
                   </table>
                 </div>
               )}
-            </GlassCard>
+            </div>
           </motion.div>
         </>
       )}

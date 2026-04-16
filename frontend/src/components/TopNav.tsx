@@ -3,8 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth";
-import { motion, AnimatePresence } from "framer-motion";
-import { User, LogOut, LayoutDashboard } from "lucide-react";
+import { User, LogOut, LayoutDashboard, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function TopNav() {
@@ -22,24 +21,23 @@ export default function TopNav() {
     { href: "/matches", label: "Matches" },
     { href: "/applications", label: "Applications" },
     { href: "/resumes", label: "Resumes" },
-    { href: "/preferences", label: "Preferences" },
   ];
 
   return (
     <header
       className={cn(
-        "fixed top-0 w-full z-50 transition-all duration-500",
-        scrolled ? "bg-[#0b0b0f]/90 backdrop-blur-xl border-b border-white/5 py-4" : "bg-transparent py-6"
+        "fixed top-0 w-full z-50 transition-all duration-300",
+        scrolled ? "bg-[var(--background)]/95 backdrop-blur-sm border-b border-[var(--border)] py-4" : "bg-transparent py-6"
       )}
     >
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 flex items-center justify-between">
+      <div className="max-w-5xl mx-auto px-6 md:px-12 lg:px-16 flex items-center justify-between">
         
         {/* Left: Logo */}
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-8 h-8 rounded bg-gradient-to-br from-[#d6b98c] to-[#c8a97e] flex items-center justify-center text-[#111] font-bold text-lg font-serif group-hover:scale-105 transition-transform">
+          <div className="w-8 h-8 bg-[var(--accent)] flex items-center justify-center text-[var(--accent-fg)] font-bold text-lg" style={{ fontFamily: 'var(--font-display)' }}>
             A
           </div>
-          <span className="font-serif text-xl tracking-wide text-white">AutoApply AI</span>
+          <span className="text-xl font-semibold tracking-tight text-[var(--foreground)]" style={{ fontFamily: 'var(--font-display)' }}>AutoApply</span>
         </Link>
 
         {/* Center: Nav */}
@@ -48,9 +46,10 @@ export default function TopNav() {
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm font-medium text-[#a39f98] hover:text-[#d6b98c] transition-colors tracking-wide"
+              className="relative text-sm font-medium text-[var(--muted-fg)] hover:text-[var(--foreground)] transition-colors uppercase tracking-[0.05em] group/link"
             >
               {link.label}
+              <span className="absolute left-0 right-0 bottom-[-2px] h-px bg-[var(--foreground)] scale-x-0 group-hover/link:scale-x-100 transition-transform origin-left duration-150" />
             </Link>
           ))}
         </nav>
@@ -61,27 +60,27 @@ export default function TopNav() {
             <div className="flex items-center gap-4">
               <Link
                 href="/dashboard"
-                className="hidden sm:flex items-center gap-2 text-sm text-[#a39f98] hover:text-white transition-colors"
+                className="hidden sm:flex items-center gap-2 text-sm text-[var(--muted-fg)] hover:text-[var(--foreground)] transition-colors uppercase tracking-wider"
               >
-                <LayoutDashboard size={16} /> Dashboard
+                <LayoutDashboard size={16} strokeWidth={1.5} /> Dashboard
               </Link>
-              <div className="h-4 w-px bg-white/10 hidden sm:block" />
+              <div className="h-4 w-px bg-[var(--border)] hidden sm:block" />
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[#d6b98c]">
-                  <User size={16} />
+                <div className="w-8 h-8 border border-[var(--border)] flex items-center justify-center text-[var(--muted-fg)]">
+                  <User size={16} strokeWidth={1.5} />
                 </div>
                 <button
                   onClick={logout}
-                  className="text-[#a39f98] hover:text-red-400 transition-colors"
+                  className="text-[var(--muted-fg)] hover:text-[var(--error)] transition-colors"
                   title="Sign out"
                 >
-                  <LogOut size={16} />
+                  <LogOut size={16} strokeWidth={1.5} />
                 </button>
               </div>
             </div>
           ) : (
-            <Link href="/login" className="btn-primary py-2 px-6">
-              Sign In
+            <Link href="/login" className="btn-primary py-2 flex items-center gap-2">
+              Sign In <ArrowRight size={16} strokeWidth={1.5} />
             </Link>
           )}
         </div>

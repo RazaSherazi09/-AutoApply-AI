@@ -49,43 +49,43 @@ export default function MatchesPage() {
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} 
             className="page-title mb-2"
           >
-            Evaluated Matches
+            Matches
           </motion.h1>
           <motion.p 
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
-            className="text-[#a39f98]"
+            className="text-[var(--muted-fg)] text-lg"
           >
-            Review the highly probable opportunities selected by our precision models.
+            Review opportunities selected by the matching engine.
           </motion.p>
         </div>
         
         <motion.div 
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
-          className="flex items-center gap-4 bg-[#0a0a0f] border border-white/5 rounded-full px-5 py-2.5"
+          className="flex items-center gap-4 border border-[var(--border)] px-5 py-3"
         >
-          <span className="text-sm text-[#a39f98] font-medium">Filter View</span>
-          <div className="h-4 w-px bg-white/10" />
+          <span className="label-upper">Filter</span>
+          <div className="h-4 w-px bg-[var(--border)]" />
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-transparent text-white outline-none cursor-pointer appearance-none min-w-[140px] font-medium"
+            className="bg-transparent text-[var(--foreground)] outline-none cursor-pointer appearance-none min-w-[140px] font-medium text-sm"
           >
-            <option value="PENDING_APPROVAL">Pending Approval</option>
+            <option value="PENDING_APPROVAL">Pending</option>
             <option value="APPROVED">Approved</option>
             <option value="REJECTED">Rejected</option>
-            <option value="All">All Evaluated</option>
+            <option value="All">All</option>
           </select>
         </motion.div>
       </header>
 
       {loading ? (
         <div className="flex justify-center py-16">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-[#06b6d4]" />
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-[var(--accent)]" />
         </div>
       ) : matches.length === 0 ? (
-        <div className="text-center py-20 border border-white/5 rounded-2xl bg-[#0a0a0f]/50">
-          <p className="text-[#a39f98] font-sans text-lg mb-2 font-medium">Queue empty.</p>
-          <p className="text-sm text-[#a39f98]/60">There are no matches requiring your attention.</p>
+        <div className="text-center py-20 border border-[var(--border)]">
+          <p className="text-2xl font-bold text-[var(--foreground)] tracking-tight mb-2" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.04em' }}>Queue empty.</p>
+          <p className="text-sm text-[var(--muted-fg)] font-mono uppercase tracking-wider">No matches require attention</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -94,7 +94,7 @@ export default function MatchesPage() {
               key={m.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ delay: i * 0.05, duration: 0.4, ease: [0.25, 0, 0, 1] }}
             >
               <MatchCard 
                 match={m}

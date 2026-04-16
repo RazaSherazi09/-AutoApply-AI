@@ -1,10 +1,9 @@
 import { Check, X } from "lucide-react";
-import GlassCard from "./GlassCard";
 import { Match } from "@/lib/api";
 import { motion } from "framer-motion";
 
 interface MatchCardProps {
-  match: any; // Using any for now to map the exact flat structure discovered in page.tsx
+  match: any;
   onApprove: (id: string) => void;
   onReject: (id: string) => void;
 }
@@ -20,17 +19,24 @@ export default function MatchCard({ match, onApprove, onReject }: MatchCardProps
   ];
 
   return (
-    <GlassCard className="flex flex-col p-6 overflow-hidden">
-      <div className="flex justify-between items-start mb-6 border-b border-white/5 pb-4">
-        <div>
-          <h3 className="text-lg font-semibold text-white mb-1 line-clamp-1">{match.job_title}</h3>
-          <p className="text-sm text-[#a39f98]">{match.job_company}</p>
+    <div className="border border-[var(--border)] hover:border-[var(--border-hover)] transition-[border-color] duration-150 p-6 flex flex-col overflow-hidden relative">
+      {/* Accent top bar */}
+      <div className="absolute top-0 left-0 h-[2px] w-12 bg-[var(--accent)]" />
+
+      <div className="flex justify-between items-start mb-6 pb-4 border-b border-[var(--border)]">
+        <div className="min-w-0 flex-1 mr-4">
+          <h3 className="text-lg font-bold text-[var(--foreground)] mb-1 line-clamp-1 tracking-tight" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.04em' }}>
+            {match.job_title}
+          </h3>
+          <p className="text-sm text-[var(--muted-fg)] uppercase tracking-[0.1em]" style={{ fontFamily: 'var(--font-mono)' }}>
+            {match.job_company}
+          </p>
         </div>
-        <div className="flex flex-col items-end flex-shrink-0 ml-4">
-          <span className="text-3xl font-light text-white leading-none mb-1">
-            {overallScore}<span className="text-lg text-[#06b6d4]">%</span>
+        <div className="flex flex-col items-end flex-shrink-0">
+          <span className="text-4xl font-bold text-[var(--foreground)] leading-none tracking-tighter" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.06em' }}>
+            {overallScore}<span className="text-lg text-[var(--accent)] font-bold">%</span>
           </span>
-          <span className="text-[10px] uppercase font-semibold text-[#a39f98] tracking-widest">Match</span>
+          <span className="text-[10px] uppercase font-bold text-[var(--muted-fg)] tracking-[0.2em] mt-1" style={{ fontFamily: 'var(--font-mono)' }}>Match</span>
         </div>
       </div>
 
@@ -38,10 +44,10 @@ export default function MatchCard({ match, onApprove, onReject }: MatchCardProps
         {progressBars.map((bar) => (
           <div key={bar.label}>
             <div className="flex justify-between items-end mb-1.5">
-              <span className="text-xs font-medium text-[#a39f98]">{bar.label}</span>
-              <span className="text-xs text-white">{Math.round(bar.value)}%</span>
+              <span className="label-upper">{bar.label}</span>
+              <span className="text-xs font-mono text-[var(--foreground)] tracking-tight">{Math.round(bar.value)}%</span>
             </div>
-            <div className="score-bar h-1.5">
+            <div className="score-bar h-[3px]">
               <motion.div 
                 initial={{ width: 0 }}
                 animate={{ width: `${bar.value}%` }}
@@ -57,26 +63,26 @@ export default function MatchCard({ match, onApprove, onReject }: MatchCardProps
         <div className="grid grid-cols-2 gap-3 mt-auto">
           <button 
             onClick={() => onApprove(match.id)}
-            className="flex items-center justify-center gap-2 py-2.5 bg-green-500/10 text-green-400 border border-green-500/20 rounded-lg hover:bg-green-500/20 transition-colors text-sm font-medium"
+            className="btn-success flex items-center justify-center gap-2 py-2.5 text-sm"
           >
-            <Check size={16} /> Approve
+            <Check size={14} strokeWidth={1.5} /> Approve
           </button>
           <button 
             onClick={() => onReject(match.id)}
-            className="flex items-center justify-center gap-2 py-2.5 bg-red-500/10 text-red-400 border border-red-500/20 rounded-lg hover:bg-red-500/20 transition-colors text-sm font-medium"
+            className="btn-danger flex items-center justify-center gap-2 py-2.5 text-sm"
           >
-            <X size={16} /> Reject
+            <X size={14} strokeWidth={1.5} /> Reject
           </button>
         </div>
       )}
       
       {match.status !== "PENDING_APPROVAL" && (
-        <div className="mt-auto text-center py-2.5 rounded-lg border border-white/5 bg-white/5">
-          <span className={`text-sm font-medium ${match.status === 'APPROVED' ? 'text-green-400' : 'text-red-400'}`}>
+        <div className="mt-auto text-center py-2.5 border border-[var(--border)]">
+          <span className={`text-sm font-bold uppercase tracking-[0.1em] ${match.status === 'APPROVED' ? 'text-[var(--success)]' : 'text-[var(--error)]'}`} style={{ fontFamily: 'var(--font-mono)' }}>
             {match.status}
           </span>
         </div>
       )}
-    </GlassCard>
+    </div>
   );
 }
